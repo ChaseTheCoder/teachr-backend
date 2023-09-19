@@ -1,9 +1,11 @@
 from django.urls import path
 from . import views
-from .views import PlanList
+from .views import PlanList, ResourceList, UnitPlanList
 
 urlpatterns = [
-    path('plan/', views.plan, name='plan'),
-    path('plans/', PlanList.as_view(), name='plans_list'),
+    path('plans/', views.plan, name='plan'),
+    path('plan/', PlanList.as_view(), name='plans_list'),
+    path('resource/', ResourceList.as_view(), name='resource_list'),
+    path('unitplan/', UnitPlanList.as_view(), name='unit_plan_list'),
     path('', views.index, name="index"),
 ]
