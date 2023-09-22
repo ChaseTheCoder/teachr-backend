@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Plan, Resource, UnitPlan
+from .models import Plan, Resource, UnitPlan, LessonPlan
 
 class PlanSerializer(serializers.ModelSerializer):
   class Meta:
@@ -14,4 +14,9 @@ class ResourceSerializer(serializers.ModelSerializer):
 class UnitPlanSerializer(serializers.ModelSerializer):
   class Meta:
     model = UnitPlan
+    fields = '__all__'
+
+class LessonPlanSerializer(serializers.ModelSerializer):
+  class Meta:
+    model = LessonPlan
     fields = '__all__'
