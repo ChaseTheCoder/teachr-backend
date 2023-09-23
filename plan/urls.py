@@ -5,6 +5,7 @@ from .views import PlanList, ResourceList, UnitPlanList, LessonPlanList
 urlpatterns = [
     path('plans/', views.plan, name='plan'),
     path('plan/', PlanList.as_view(), name='plans_list'),
+    path('plan/<int:plan_id>/', PlanList.as_view(), name='plans_detail'),
     path('resource/', ResourceList.as_view(), name='resource_list'),
     path('unitplan/', UnitPlanList.as_view(), name='unit_plan_list'),
     path('lessonplan/', LessonPlanList.as_view(), name='lesson_plan_list'),
