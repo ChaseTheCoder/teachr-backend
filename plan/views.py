@@ -16,10 +16,6 @@ class UnitPlanDetail(generics.RetrieveAPIView):
   queryset = UnitPlan.objects.all()
   serializer_class = UnitPlanSerializer
 
-  # def get_queryset(self):
-  #   id = self.kwargs['id']
-  #   return UnitPlan.objects.filter(id=id)
-
 class ResourceList(generics.ListAPIView):
   queryset = Resource.objects.all()
   serializer_class = ResourceSerializer
@@ -28,7 +24,7 @@ class LessonPlanList(generics.ListAPIView):
   queryset = LessonPlan.objects.all()
   serializer_class = LessonPlanSerializer
 
-class LessonPlanDetail(generics.ListAPIView):
+class LessonPlanDetail(generics.RetrieveAPIView):
   queryset = LessonPlan.objects.all()
   serializer_class = LessonPlanSerializer
 

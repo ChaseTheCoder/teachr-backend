@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import PlanList, ResourceList, UnitPlanList, UnitPlanDetail, LessonPlanList
+from .views import LessonPlanDetail, PlanList, ResourceList, UnitPlanList, UnitPlanDetail, LessonPlanList
 
 urlpatterns = [
     path('plans/', views.plan, name='plan'),
@@ -9,6 +9,7 @@ urlpatterns = [
     path('resource/', ResourceList.as_view(), name='resource_list'),
     path('unitplan/', UnitPlanList.as_view(), name='unit_plan_list'),
     path('unitplan/<int:pk>/', UnitPlanDetail.as_view(), name='unit_plan_detail'),
-    path('lessonplan/', LessonPlanList.as_view(), name='lesson_plan_list'),
+    path('lessonplan/', LessonPlanList.as_view(), name='lesson_plan_detail'),
+    path('lessonplan/<int:pk>/', LessonPlanDetail.as_view(), name='lesson_plan_detail'),
     path('', views.index, name="index"),
 ]

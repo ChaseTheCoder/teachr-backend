@@ -22,7 +22,7 @@ class UnitPlan(models.Model):
 class Resource(models.Model):
   link = models.URLField(null=True, blank=True)
   title = models.CharField(max_length=50)
-  resource = models.ForeignKey(UnitPlan, on_delete=models.CASCADE, null=True, blank=True)
+  resource = models.ForeignKey(UnitPlan, related_name='resources', on_delete=models.CASCADE, null=True, blank=True)
 
   def __str__(self):
     return self.title
@@ -32,7 +32,7 @@ class LessonPlan(models.Model):
   title = models.CharField(max_length=100)
   standard = models.TextField(max_length=1000)
   objective = models.TextField(max_length=1000)
-  unit_plan = models.ForeignKey(UnitPlan, on_delete=models.CASCADE, null=True, blank=True) # FIX It is impossible to add a non-nullable field 'unitplan' to lessonplan without specifying a default.
+  unit_plan = models.ForeignKey(UnitPlan, related_name='lessons',on_delete=models.CASCADE, null=True, blank=True)
 
   def __str__(self):
     return self.title
@@ -41,7 +41,7 @@ class LessonPlan(models.Model):
 class LessonOutline(models.Model):
   title = models.CharField(max_length=100)
   description = models.TextField(max_length=1000)
-  lesson_plan = models.ForeignKey(LessonPlan, on_delete=models.CASCADE, null=True, blank=True)
+  lesson_plan = models.ForeignKey(LessonPlan, related_name='lesson_outline', on_delete=models.CASCADE, null=True, blank=True)
 
   def __str__(self):
     return self.title
@@ -50,7 +50,7 @@ class LessonOutline(models.Model):
 class Material(models.Model):
   title = models.CharField(max_length=50)
   link = models.URLField(null=True, blank=True)
-  lesson_plan = models.ForeignKey(LessonPlan, on_delete=models.CASCADE, null=True, blank=True)
+  lesson_plan = models.ForeignKey(LessonPlan, related_name='materials', on_delete=models.CASCADE, null=True, blank=True)
 
   def __str__(self):
     return self.title
