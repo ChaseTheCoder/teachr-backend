@@ -36,9 +36,14 @@ class MaterialList(generics.ListAPIView):
   queryset = LessonPlan.objects.all()
   serializer_class = MaterialSerializer
 
+class DeleteMaterialDetail(generics.DestroyAPIView):
+    queryset = LessonPlan.objects.all()
+    serializer_class = MaterialSerializer
+
 def plan(request):
   all_plans = Plan.objects.all
   return render(request, 'home.html', {'plans': all_plans})
 
 def index(request):
     return render_nextjs_page_sync(request)
+
