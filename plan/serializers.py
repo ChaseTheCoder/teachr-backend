@@ -19,12 +19,12 @@ class MaterialSerializer(serializers.ModelSerializer):
 # LESSON
 
 class LessonPlanSerializer(serializers.ModelSerializer):
-  # materials = MaterialSerializer(many=True)
+  materials = MaterialSerializer(many=True)
   lesson_outline = LessonOutlineSerializer(many=True)
 
   class Meta:
     model = LessonPlan
-    fields = ('id', 'title', 'standard', 'objective', 'lesson_outline')
+    fields = ('id', 'title', 'standard', 'objective', 'lesson_outline', 'materials')
 
 # UNIT
 

@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from plan.serializers import PlanSerializer, ResourceSerializer, UnitPlanSerializer, LessonPlanSerializer, LessonOutlineSerializer, MaterialSerializer
-from .models import Plan, Resource, UnitPlan, LessonPlan
+from .models import Plan, Resource, UnitPlan, LessonPlan, Material
 from django_nextjs.render import render_nextjs_page_sync
 from rest_framework import generics
 
@@ -33,11 +33,11 @@ class LessonOutlineList(generics.ListAPIView):
   serializer_class = LessonOutlineSerializer
 
 class MaterialList(generics.ListAPIView):
-  queryset = LessonPlan.objects.all()
+  queryset = Material.objects.all()
   serializer_class = MaterialSerializer
 
 class DeleteMaterialDetail(generics.DestroyAPIView):
-    queryset = LessonPlan.objects.all()
+    queryset = Material.objects.all()
     serializer_class = MaterialSerializer
 
 def plan(request):
