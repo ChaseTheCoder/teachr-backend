@@ -13,7 +13,7 @@ class UnitPlan(models.Model):
   title = models.CharField(max_length=100)
   overview = models.CharField(max_length=200)
   standard = models.TextField(max_length=1000)
-  subject = models.ForeignKey(Plan, related_name='units', on_delete=models.CASCADE)
+  subject = models.ForeignKey(Plan, related_name='units', on_delete=models.CASCADE, blank=True, null=True)
 
   def __str__(self):
     return self.title

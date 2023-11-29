@@ -1,16 +1,52 @@
 from django.shortcuts import render
+from plan import serializers
 from plan.serializers import PlanSerializer, ResourceSerializer, UnitPlanSerializer, LessonPlanSerializer, LessonOutlineSerializer, MaterialSerializer
 from .models import Plan, Resource, UnitPlan, LessonPlan, Material
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework import permissions
 from django_nextjs.render import render_nextjs_page_sync
 from rest_framework import generics
 
-class PlanList(generics.ListAPIView):
-  queryset = Plan.objects.all()
-  serializer_class = PlanSerializer
+class PlanList(APIView):
+  def get(self, *args, **kwargs):
+    queryset = Plan.objects.all()
+    serializer_class = PlanSerializer(queryset, many=True)
+    return Response(serializer_class.data, status=status.HTTP_200_OK)
 
-class UnitPlanList(generics.ListAPIView):
-  queryset = UnitPlan.objects.all()
-  serializer_class = UnitPlanSerializer
+  def post(self, request, *args, **kwargs):
+    data = {
+      'subject': request.data.get('subject'), 
+      'grade': request.data.get('grade')
+    }
+    serializer = PlanSerializer(data=data)
+    if serializer.is_valid():
+      serializer.save()
+      return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class UnitPlanList(APIView):
+  def get(self, *args, **kwargs):
+    queryset = UnitPlan.objects.all()
+    serializer_class = UnitPlanSerializer(queryset, many=True)
+    return Response(serializer_class.data, status=status.HTTP_200_OK)
+
+  def post(self, request, *args, **kwargs):
+    data = {
+        'title': request.data.get('title'), 
+        'overview': request.data.get('overview'),
+        'standard': request.data.get('standard'),
+        'subject': request.subject.id
+    }
+    serializer = UnitPlanSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UnitPlanDetail(generics.RetrieveAPIView):
   queryset = UnitPlan.objects.all()
