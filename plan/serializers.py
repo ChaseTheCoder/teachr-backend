@@ -48,10 +48,16 @@ class UnitPlanTitleSerializer(serializers.ModelSerializer):
     model = UnitPlan
     fields = ('id', 'title', 'overview')
 
-class PlanSerializer(serializers.ModelSerializer):
+class PlanPageSerializer(serializers.ModelSerializer):
   units = UnitPlanTitleSerializer(many=True)
 
   class Meta:
     model = Plan
     fields = ('id', 'subject', 'grade', 'units')
+
+class PlanSerializer(serializers.ModelSerializer):
+
+  class Meta:
+    model = Plan
+    fields = ('id', 'subject', 'grade')
 

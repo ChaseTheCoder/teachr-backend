@@ -1,11 +1,11 @@
 from django.urls import path
 from . import views
-from .views import LessonPlanDetail, PlanList, ResourceList, UnitPlanList, UnitPlanDetail, LessonPlanList, DeleteMaterialDetail, MaterialList
+from .views import LessonPlanDetail, PlanDetail, PlanList, ResourceList, UnitPlanList, UnitPlanDetail, LessonPlanList, DeleteMaterialDetail, MaterialList
 
 urlpatterns = [
     path('plans/', views.plan, name='plan'),
     path('plan/', PlanList.as_view(), name='plans_list'),
-    path('plan/<int:plan_id>/', PlanList.as_view(), name='plans_detail'),
+    path('plan/<int:plan_id>/', PlanDetail.as_view(), name='plans_detail'),
     path('resource/', ResourceList.as_view(), name='resource_list'),
     path('unitplan/', UnitPlanList.as_view(), name='unit_plan_list'),
     path('unitplan/<int:pk>/', UnitPlanDetail.as_view(), name='unit_plan_detail'),

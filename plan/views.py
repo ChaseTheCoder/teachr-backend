@@ -1,6 +1,6 @@
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from plan import serializers
-from plan.serializers import PlanSerializer, ResourceSerializer, UnitPlanSerializer, LessonPlanSerializer, LessonOutlineSerializer, MaterialSerializer
+from plan.serializers import PlanPageSerializer, PlanSerializer, ResourceSerializer, UnitPlanSerializer, LessonPlanSerializer, LessonOutlineSerializer, MaterialSerializer
 from .models import Plan, Resource, UnitPlan, LessonPlan, Material
 
 from rest_framework.views import APIView
@@ -11,9 +11,15 @@ from django_nextjs.render import render_nextjs_page_sync
 from rest_framework import generics
 
 class PlanList(APIView):
-  def get(self, *args, **kwargs):
+  def get(self, request, *args, **kwargs):
     queryset = Plan.objects.all()
-    serializer_class = PlanSerializer(queryset, many=True)
+    serializer_class = PlanPageSerializer(queryset, many=True)
+    return Response(serializer_class.data, status=status.HTTP_200_OK)
+
+class PlanDetail(APIView):
+  def get(self, request, plan_id, *args, **kwargs):
+    queryset = Plan.objects.get(id=plan_id)
+    serializer_class = PlanSerializer(queryset)
     return Response(serializer_class.data, status=status.HTTP_200_OK)
 
   def post(self, request, *args, **kwargs):
@@ -27,6 +33,20 @@ class PlanList(APIView):
       return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+  def delete(self, request, plan_id,  *args, **kwargs):
+    instance = Plan.objects.get(id=plan_id)
+    print(plan_id)
+    if not instance:
+        return Response(
+            {"res": "Object with id does not exists"}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    instance.delete()
+    return Response(
+      {"res": "Object deleted!"},
+      status=status.HTTP_200_OK
+    )
 
 class UnitPlanList(APIView):
   def get(self, *args, **kwargs):
