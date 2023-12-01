@@ -10,16 +10,11 @@ from rest_framework import permissions
 from django_nextjs.render import render_nextjs_page_sync
 from rest_framework import generics
 
+# PLAN
 class PlanList(APIView):
   def get(self, request, *args, **kwargs):
     queryset = Plan.objects.all()
     serializer_class = PlanPageSerializer(queryset, many=True)
-    return Response(serializer_class.data, status=status.HTTP_200_OK)
-
-class PlanDetail(APIView):
-  def get(self, request, plan_id, *args, **kwargs):
-    queryset = Plan.objects.get(id=plan_id)
-    serializer_class = PlanSerializer(queryset)
     return Response(serializer_class.data, status=status.HTTP_200_OK)
 
   def post(self, request, *args, **kwargs):
@@ -34,9 +29,14 @@ class PlanDetail(APIView):
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class PlanDetail(APIView):
+  def get(self, request, plan_id, *args, **kwargs):
+    queryset = Plan.objects.get(id=plan_id)
+    serializer_class = PlanSerializer(queryset)
+    return Response(serializer_class.data, status=status.HTTP_200_OK)
+
   def delete(self, request, plan_id,  *args, **kwargs):
     instance = Plan.objects.get(id=plan_id)
-    print(plan_id)
     if not instance:
         return Response(
             {"res": "Object with id does not exists"}, 
@@ -48,18 +48,20 @@ class PlanDetail(APIView):
       status=status.HTTP_200_OK
     )
 
+# UNITPLAN
+
 class UnitPlanList(APIView):
   def get(self, *args, **kwargs):
     queryset = UnitPlan.objects.all()
     serializer_class = UnitPlanSerializer(queryset, many=True)
     return Response(serializer_class.data, status=status.HTTP_200_OK)
-
+  
   def post(self, request, *args, **kwargs):
     data = {
         'title': request.data.get('title'), 
         'overview': request.data.get('overview'),
         'standard': request.data.get('standard'),
-        'subject': request.subject.id
+        'subject': request.data.get('subject')
     }
     serializer = UnitPlanSerializer(data=data)
     if serializer.is_valid():
@@ -68,9 +70,11 @@ class UnitPlanList(APIView):
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class UnitPlanDetail(generics.RetrieveAPIView):
-  queryset = UnitPlan.objects.all()
-  serializer_class = UnitPlanSerializer
+class UnitPlanDetail(APIView):
+  def get(self, request, unitplan_id, *args, **kwargs):
+    queryset = UnitPlan.objects.get(id=unitplan_id)
+    serializer_class = UnitPlanSerializer(queryset)
+    return Response(serializer_class.data, status=status.HTTP_200_OK)
 
 class ResourceList(generics.ListAPIView):
   queryset = Resource.objects.all()

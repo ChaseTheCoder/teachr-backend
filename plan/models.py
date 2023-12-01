@@ -18,10 +18,10 @@ class UnitPlan(models.Model):
   def __str__(self):
     return self.title
 
-# Resource
+# RESOURCE
 class Resource(models.Model):
-  link = models.URLField(null=True, blank=True)
-  title = models.CharField(max_length=50)
+  link = models.URLField(blank=False, default='')
+  title = models.CharField(max_length=50, blank=True, default='')
   resource = models.ForeignKey(UnitPlan, related_name='resources', on_delete=models.CASCADE, null=True, blank=True)
 
   def __str__(self):
@@ -29,9 +29,9 @@ class Resource(models.Model):
 
 # LESSON PLAN
 class LessonPlan(models.Model):
-  title = models.CharField(max_length=100)
-  standard = models.TextField(max_length=1000)
-  objective = models.TextField(max_length=1000)
+  title = models.CharField(max_length=100, blank=True, default='')
+  standard = models.TextField(max_length=1000, blank=True, default='')
+  objective = models.TextField(max_length=1000, blank=True, default='')
   unit_plan = models.ForeignKey(UnitPlan, related_name='lessons',on_delete=models.CASCADE, null=True, blank=True)
 
   def __str__(self):
@@ -39,14 +39,14 @@ class LessonPlan(models.Model):
 
 # LESSON PLAN OUTLINE
 class LessonOutline(models.Model):
-  title = models.CharField(max_length=100)
-  description = models.TextField(max_length=1000)
+  title = models.CharField(max_length=100, blank=True, default='')
+  description = models.TextField(max_length=1000, blank=True, default='')
   lesson_plan = models.ForeignKey(LessonPlan, related_name='lesson_outline', on_delete=models.CASCADE, null=True, blank=True)
 
   def __str__(self):
     return self.title
 
-# Resource
+# RESOURCE
 class Material(models.Model):
   title = models.CharField(max_length=50)
   link = models.URLField(null=True, blank=True)

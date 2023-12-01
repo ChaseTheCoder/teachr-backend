@@ -34,12 +34,17 @@ class LessonPlanTitleSerializer(serializers.ModelSerializer):
     model = LessonPlan
     fields = ('id', 'title')
 
-class UnitPlanSerializer(serializers.ModelSerializer):
+class UnitPlanPageSerializer(serializers.ModelSerializer):
   lessons = LessonPlanTitleSerializer(many=True)
   resources = ResourceSerializer(many=True)
   class Meta:
     model = UnitPlan
     fields = ('id', 'title', 'overview', 'standard', 'lessons', 'resources')
+
+class UnitPlanSerializer(serializers.ModelSerializer):
+  class Meta:
+    model = UnitPlan
+    fields = ('id', 'title', 'overview', 'standard')
 
 # PLAN
 
