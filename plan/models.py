@@ -22,7 +22,7 @@ class UnitPlan(models.Model):
 class Resource(models.Model):
   link = models.URLField(blank=False, default='')
   title = models.CharField(max_length=50, blank=True, default='')
-  resource = models.ForeignKey(UnitPlan, related_name='resources', on_delete=models.CASCADE, null=True, blank=True)
+  unit_plan = models.ForeignKey(UnitPlan, related_name='resources', on_delete=models.CASCADE, null=True, blank=True)
 
   def __str__(self):
     return self.title

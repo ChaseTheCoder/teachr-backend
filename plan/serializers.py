@@ -27,6 +27,11 @@ class LessonPlanSerializer(serializers.ModelSerializer):
     model = LessonPlan
     fields = ('id', 'title', 'standard', 'objective', 'lesson_outline', 'materials')
 
+class LessonPlanDetailSerializer(serializers.ModelSerializer):
+  class Meta:
+    model = LessonPlan
+    fields = ('id', 'title', 'standard', 'objective')
+
 # UNIT
 
 class LessonPlanTitleSerializer(serializers.ModelSerializer):
@@ -44,7 +49,7 @@ class UnitPlanPageSerializer(serializers.ModelSerializer):
 class UnitPlanSerializer(serializers.ModelSerializer):
   class Meta:
     model = UnitPlan
-    fields = ('id', 'title', 'overview', 'standard')
+    fields = ('id', 'title', 'overview', 'standard', 'subject')
 
 # PLAN
 
