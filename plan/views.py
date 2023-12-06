@@ -1,20 +1,17 @@
-from django.shortcuts import get_object_or_404, render
-from plan import serializers
-from plan.serializers import PlanPageSerializer, PlanSerializer, ResourceSerializer, UnitPlanSerializer, LessonPlanSerializer, LessonOutlineSerializer, LessonPlanDetailSerializer, MaterialSerializer
-from .models import Plan, Resource, UnitPlan, LessonPlan, Material
+from django.shortcuts import render
+from plan.serializers import SubjectPageSerializer, SubjectSerializer, ResourceSerializer, UnitPlanPageSerializer, UnitPlanSerializer, LessonPlanSerializer, LessonOutlineSerializer, LessonPlanDetailSerializer, MaterialSerializer
+from .models import Subject, Resource, UnitPlan, LessonPlan, Material
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework import permissions
 from django_nextjs.render import render_nextjs_page_sync
-from rest_framework import generics
 
-# PLAN
-class PlanList(APIView):
+# SUBJECT
+class SubjectList(APIView):
   def get(self, request, *args, **kwargs):
-    queryset = Plan.objects.all()
-    serializer_class = PlanPageSerializer(queryset, many=True)
+    queryset = Subject.objects.all()
+    serializer_class = SubjectPageSerializer(queryset, many=True)
     return Response(serializer_class.data, status=status.HTTP_200_OK)
 
   def post(self, request, *args, **kwargs):
@@ -22,21 +19,21 @@ class PlanList(APIView):
       'subject': request.data.get('subject'), 
       'grade': request.data.get('grade')
     }
-    serializer = PlanSerializer(data=data)
+    serializer = SubjectSerializer(data=data)
     if serializer.is_valid():
       serializer.save()
       return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class PlanDetail(APIView):
-  def get(self, request, plan_id, *args, **kwargs):
-    queryset = Plan.objects.get(id=plan_id)
-    serializer_class = PlanSerializer(queryset)
+class SubjectDetail(APIView):
+  def get(self, request, subject_id, *args, **kwargs):
+    queryset = Subject.objects.get(id=subject_id)
+    serializer_class = SubjectSerializer(queryset)
     return Response(serializer_class.data, status=status.HTTP_200_OK)
 
-  def delete(self, request, plan_id,  *args, **kwargs):
-    instance = Plan.objects.get(id=plan_id)
+  def delete(self, request, subject_id,  *args, **kwargs):
+    instance = Subject.objects.get(id=subject_id)
     if not instance:
         return Response(
             {"res": "Object with id does not exists"}, 
@@ -72,7 +69,7 @@ class UnitPlanList(APIView):
 class UnitPlanDetail(APIView):
   def get(self, request, unitplan_id, *args, **kwargs):
     queryset = UnitPlan.objects.get(id=unitplan_id)
-    serializer_class = UnitPlanSerializer(queryset)
+    serializer_class = UnitPlanPageSerializer(queryset)
     return Response(serializer_class.data, status=status.HTTP_200_OK)
 
   def delete(self, request, unitplan_id,  *args, **kwargs):
@@ -126,7 +123,7 @@ class ResourceDetail(APIView):
       status=status.HTTP_200_OK
     )
 
-class LessonPlanList(generics.ListAPIView):
+class LessonPlanList(APIView):
   def get(self, *args, **kwargs):
     queryset = LessonPlan.objects.all()
     serializer_class = LessonPlanSerializer(queryset, many=True)
@@ -139,14 +136,14 @@ class LessonPlanList(generics.ListAPIView):
         'objective': request.data.get('objective'), 
         'unit_plan': request.data.get('unit_plan')
     }
-    serializer = LessonPlanDetailSerializer(data=data)
+    serializer = LessonPlanSerializer(data=data)
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class LessonPlanDetail(generics.RetrieveAPIView):
+class LessonPlanDetail(APIView):
   def get(self, request, lessonplan_id, *args, **kwargs):
     queryset = LessonPlan.objects.get(id=lessonplan_id)
     serializer_class = LessonPlanDetailSerializer(queryset)
@@ -165,11 +162,13 @@ class LessonPlanDetail(generics.RetrieveAPIView):
       status=status.HTTP_200_OK
     )
 
-class LessonOutlineList(generics.ListAPIView):
-  queryset = LessonPlan.objects.all()
-  serializer_class = LessonOutlineSerializer
+class LessonOutlineList(APIView):
+  def get(self, request, *args, **kwargs):
+    queryset = LessonPlan.objects.all()
+    serializer_class = LessonOutlineSerializer(queryset)
+    return Response(serializer_class.data, status=status.HTTP_200_OK)
 
-class MaterialList(generics.ListAPIView):
+class MaterialList(APIView):
   def get(self, *args, **kwargs):
     queryset = Material.objects.all()
     serializer_class = MaterialSerializer(queryset, many=True)
@@ -188,13 +187,28 @@ class MaterialList(generics.ListAPIView):
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class DeleteMaterialDetail(generics.DestroyAPIView):
-    queryset = Material.objects.all()
-    serializer_class = MaterialSerializer
+class MaterialDetail(APIView):
+  def get(self, request, material_id, *args, **kwargs):
+    queryset = Material.objects.get(id=material_id)
+    serializer_class = MaterialSerializer(queryset)
+    return Response(serializer_class.data, status=status.HTTP_200_OK)
 
-def plan(request):
-  all_plans = Plan.objects.all
-  return render(request, 'home.html', {'plans': all_plans})
+  def delete(self, request, material_id,  *args, **kwargs):
+    instance = Material.objects.get(id=material_id)
+    if not instance:
+        return Response(
+            {"res": "Object with id does not exists"}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    instance.delete()
+    return Response(
+      {"res": "Object deleted!"},
+      status=status.HTTP_200_OK
+    )
+
+def subjects(request):
+  all_subjects = Subject.objects.all
+  return render(request, 'home.html', {'subjects': all_subjects})
 
 def index(request):
     return render_nextjs_page_sync(request)

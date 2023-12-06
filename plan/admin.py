@@ -1,7 +1,7 @@
 from django.contrib import admin
-from .models import Plan, Resource, UnitPlan, LessonPlan, LessonOutline, Material
+from .models import Subject, Resource, UnitPlan, LessonPlan, LessonOutline, Material
 
-admin.site.register(Plan)
+admin.site.register(Subject)
 admin.site.register(UnitPlan)
 admin.site.register(Resource)
 admin.site.register(LessonPlan)

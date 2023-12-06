@@ -1,6 +1,6 @@
 from django import forms
 from rest_framework import serializers
-from .models import Plan, Resource, UnitPlan, LessonPlan, LessonOutline, Material
+from .models import Subject, Resource, UnitPlan, LessonPlan, LessonOutline, Material
 
 class ResourceSerializer(serializers.ModelSerializer):
   class Meta:
@@ -19,7 +19,7 @@ class MaterialSerializer(serializers.ModelSerializer):
 
 # LESSON
 
-class LessonPlanSerializer(serializers.ModelSerializer):
+class LessonPlanDetailSerializer(serializers.ModelSerializer):
   materials = MaterialSerializer(many=True)
   lesson_outline = LessonOutlineSerializer(many=True)
 
@@ -27,7 +27,7 @@ class LessonPlanSerializer(serializers.ModelSerializer):
     model = LessonPlan
     fields = ('id', 'title', 'standard', 'objective', 'lesson_outline', 'materials')
 
-class LessonPlanDetailSerializer(serializers.ModelSerializer):
+class LessonPlanSerializer(serializers.ModelSerializer):
   class Meta:
     model = LessonPlan
     fields = ('id', 'title', 'standard', 'objective')
@@ -51,23 +51,23 @@ class UnitPlanSerializer(serializers.ModelSerializer):
     model = UnitPlan
     fields = ('id', 'title', 'overview', 'standard', 'subject')
 
-# PLAN
+# SUBJECT
 
 class UnitPlanTitleSerializer(serializers.ModelSerializer):
   class Meta:
     model = UnitPlan
     fields = ('id', 'title', 'overview')
 
-class PlanPageSerializer(serializers.ModelSerializer):
+class SubjectPageSerializer(serializers.ModelSerializer):
   units = UnitPlanTitleSerializer(many=True)
 
   class Meta:
-    model = Plan
+    model = Subject
     fields = ('id', 'subject', 'grade', 'units')
 
-class PlanSerializer(serializers.ModelSerializer):
+class SubjectSerializer(serializers.ModelSerializer):
 
   class Meta:
-    model = Plan
+    model = Subject
     fields = ('id', 'subject', 'grade')
 
