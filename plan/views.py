@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from plan.serializers import SubjectPageSerializer, SubjectSerializer, ResourceSerializer, UnitPlanPageSerializer, UnitPlanSerializer, LessonPlanSerializer, LessonOutlineSerializer, LessonPlanDetailSerializer, MaterialSerializer
+from plan.serializers import SubjectPageSerializer, SubjectSerializer, ResourceSerializer, UnitPlanPageSerializer, UnitPlanSerializer, LessonPlanSerializer, LessonPlanDetailSerializer, MaterialSerializer
 from .models import Subject, Resource, UnitPlan, LessonPlan, Material
 
 from rest_framework.views import APIView
@@ -19,7 +19,7 @@ class SubjectList(APIView):
       'subject': request.data.get('subject'), 
       'grade': request.data.get('grade')
     }
-    serializer = SubjectSerializer(data=data)
+    serializer = SubjectSerializer(data=data, partial=True)
     if serializer.is_valid():
       serializer.save()
       return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -51,20 +51,6 @@ class UnitPlanList(APIView):
     queryset = UnitPlan.objects.all()
     serializer_class = UnitPlanSerializer(queryset, many=True)
     return Response(serializer_class.data, status=status.HTTP_200_OK)
-  
-  def post(self, request, *args, **kwargs):
-    data = {
-        'title': request.data.get('title'), 
-        'overview': request.data.get('overview'),
-        'standard': request.data.get('standard'),
-        'subject': request.data.get('subject')
-    }
-    serializer = UnitPlanSerializer(data=data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UnitPlanDetail(APIView):
   def get(self, request, unitplan_id, *args, **kwargs):
@@ -84,6 +70,20 @@ class UnitPlanDetail(APIView):
       {"res": "Object deleted!"},
       status=status.HTTP_200_OK
     )
+  
+  def post(self, request, *args, **kwargs):
+    data = {
+        'title': request.data.get('title'), 
+        'overview': request.data.get('overview'),
+        'standard': request.data.get('standard'),
+        'subject': request.data.get('subject')
+    }
+    serializer = UnitPlanSerializer(data=data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class ResourceList(APIView):
   def get(self, *args, **kwargs):
@@ -128,20 +128,6 @@ class LessonPlanList(APIView):
     queryset = LessonPlan.objects.all()
     serializer_class = LessonPlanSerializer(queryset, many=True)
     return Response(serializer_class.data, status=status.HTTP_200_OK)
-  
-  def post(self, request, *args, **kwargs):
-    data = {
-        'title': request.data.get('title'),
-        'standard': request.data.get('standard'), 
-        'objective': request.data.get('objective'), 
-        'unit_plan': request.data.get('unit_plan')
-    }
-    serializer = LessonPlanSerializer(data=data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LessonPlanDetail(APIView):
   def get(self, request, lessonplan_id, *args, **kwargs):
@@ -162,11 +148,29 @@ class LessonPlanDetail(APIView):
       status=status.HTTP_200_OK
     )
 
-class LessonOutlineList(APIView):
-  def get(self, request, *args, **kwargs):
-    queryset = LessonPlan.objects.all()
-    serializer_class = LessonOutlineSerializer(queryset)
-    return Response(serializer_class.data, status=status.HTTP_200_OK)
+  def post(self, request, *args, **kwargs):
+    data = {
+        'title': request.data.get('title'),
+        'standard': request.data.get('standard'), 
+        'objective': request.data.get('objective'), 
+        'body': request.data.get('body'),
+        'unit_plan': request.data.get('unit_plan')
+    }
+    serializer = LessonPlanDetailSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+  
+  def patch(self, request, lessonplan_id):
+    instance = LessonPlan.objects.get(id=lessonplan_id)
+    serializer = LessonPlanDetailSerializer(instance, data=request.data, partial=True) # set partial=True to update a data partially
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class MaterialList(APIView):
   def get(self, *args, **kwargs):

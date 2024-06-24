@@ -32,16 +32,8 @@ class LessonPlan(models.Model):
   title = models.CharField(max_length=100, blank=True, default='')
   standard = models.TextField(max_length=1000, blank=True, default='')
   objective = models.TextField(max_length=1000, blank=True, default='')
+  body = models.TextField(blank=True, default='')
   unit_plan = models.ForeignKey(UnitPlan, related_name='lessons',on_delete=models.CASCADE, null=True, blank=True)
-
-  def __str__(self):
-    return self.title
-
-# LESSON PLAN OUTLINE
-class LessonOutline(models.Model):
-  title = models.CharField(max_length=100, blank=True, default='')
-  description = models.TextField(max_length=1000, blank=True, default='')
-  lesson_plan = models.ForeignKey(LessonPlan, related_name='lesson_outline', on_delete=models.CASCADE, null=True, blank=True)
 
   def __str__(self):
     return self.title

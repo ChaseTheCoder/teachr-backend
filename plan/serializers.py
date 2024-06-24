@@ -1,15 +1,10 @@
 from django import forms
 from rest_framework import serializers
-from .models import Subject, Resource, UnitPlan, LessonPlan, LessonOutline, Material
+from .models import Subject, Resource, UnitPlan, LessonPlan, Material
 
 class ResourceSerializer(serializers.ModelSerializer):
   class Meta:
     model = Resource
-    fields = '__all__'
-
-class LessonOutlineSerializer(serializers.ModelSerializer):
-  class Meta:
-    model = LessonOutline
     fields = '__all__'
 
 class MaterialSerializer(serializers.ModelSerializer):
@@ -21,11 +16,10 @@ class MaterialSerializer(serializers.ModelSerializer):
 
 class LessonPlanDetailSerializer(serializers.ModelSerializer):
   materials = MaterialSerializer(many=True)
-  lesson_outline = LessonOutlineSerializer(many=True)
 
   class Meta:
     model = LessonPlan
-    fields = ('id', 'title', 'standard', 'objective', 'lesson_outline', 'materials')
+    fields = '__all__'
 
 class LessonPlanSerializer(serializers.ModelSerializer):
   class Meta:
