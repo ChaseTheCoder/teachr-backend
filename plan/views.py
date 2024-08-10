@@ -51,6 +51,20 @@ class UnitPlanList(APIView):
     queryset = UnitPlan.objects.all()
     serializer_class = UnitPlanSerializer(queryset, many=True)
     return Response(serializer_class.data, status=status.HTTP_200_OK)
+  
+  def post(self, request, *args, **kwargs):
+    data = {
+        'title': request.data.get('title'),
+        'overview': '',
+        'standard': '',
+        'subject': request.data.get('subject')
+    }
+    serializer = UnitPlanSerializer(data=data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UnitPlanDetail(APIView):
   def get(self, request, unitplan_id, *args, **kwargs):
@@ -128,6 +142,21 @@ class LessonPlanList(APIView):
     queryset = LessonPlan.objects.all()
     serializer_class = LessonPlanSerializer(queryset, many=True)
     return Response(serializer_class.data, status=status.HTTP_200_OK)
+  
+  def post(self, request, *args, **kwargs):
+    data = {
+        'title': request.data.get('title'),
+        'standard': '', 
+        'objective': '', 
+        'body': '',
+        'unit_plan': request.data.get('unit_plan')
+    }
+    serializer = LessonPlanDetailSerializer(data=data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LessonPlanDetail(APIView):
   def get(self, request, lessonplan_id, *args, **kwargs):
@@ -147,21 +176,6 @@ class LessonPlanDetail(APIView):
       {"res": "Object deleted!"},
       status=status.HTTP_200_OK
     )
-
-  def post(self, request, *args, **kwargs):
-    data = {
-        'title': request.data.get('title'),
-        'standard': request.data.get('standard'), 
-        'objective': request.data.get('objective'), 
-        'body': request.data.get('body'),
-        'unit_plan': request.data.get('unit_plan')
-    }
-    serializer = LessonPlanDetailSerializer(data=data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
   
   def patch(self, request, lessonplan_id):
     instance = LessonPlan.objects.get(id=lessonplan_id)
@@ -184,7 +198,7 @@ class MaterialList(APIView):
         'link': request.data.get('link'), 
         'lesson_plan': request.data.get('lesson_plan')
     }
-    serializer = MaterialSerializer(data=data)
+    serializer = MaterialSerializer(data=data, partial=True)
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -196,6 +210,19 @@ class MaterialDetail(APIView):
     queryset = Material.objects.get(id=material_id)
     serializer_class = MaterialSerializer(queryset)
     return Response(serializer_class.data, status=status.HTTP_200_OK)
+  
+  def post(self, request, *args, **kwargs):
+    data = {
+        'title': request.data.get('title'),
+        'link': request.data.get('link'), 
+        'lesson_plan': request.data.get('lesson_plan')
+    }
+    serializer = MaterialSerializer(data=data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
   def delete(self, request, material_id,  *args, **kwargs):
     instance = Material.objects.get(id=material_id)
