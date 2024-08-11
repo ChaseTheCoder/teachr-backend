@@ -31,6 +31,27 @@ class SubjectDetail(APIView):
     queryset = Subject.objects.get(id=subject_id)
     serializer_class = SubjectSerializer(queryset)
     return Response(serializer_class.data, status=status.HTTP_200_OK)
+  
+  def post(self, request, *args, **kwargs):
+    data = {
+        'subject': request.data.get('subject'),
+        'grade': request.data.get('grade')
+    }
+    serializer = SubjectSerializer(data=data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+  def patch(self, request, subject_id):
+    instance = Subject.objects.get(id=subject_id)
+    serializer = SubjectSerializer(instance, data=request.data, partial=True) # set partial=True to update a data partially
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
   def delete(self, request, subject_id,  *args, **kwargs):
     instance = Subject.objects.get(id=subject_id)
