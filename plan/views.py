@@ -123,7 +123,7 @@ class UnitPlanDetail(APIView):
   
   def patch(self, request, unitplan_id):
     instance = UnitPlan.objects.get(id=unitplan_id)
-    serializer = UnitPlanTitleSerializer(instance, data=request.data, partial=True) # set partial=True to update a data partially
+    serializer = UnitPlanSerializer(instance, data=request.data, partial=True) # set partial=True to update a data partially
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
