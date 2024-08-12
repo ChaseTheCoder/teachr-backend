@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from plan.serializers import SubjectPageSerializer, SubjectSerializer, ResourceSerializer, UnitPlanPageSerializer, UnitPlanSerializer, LessonPlanSerializer, LessonPlanDetailSerializer, MaterialSerializer
+from plan.serializers import SubjectPageSerializer, SubjectSerializer, ResourceSerializer, UnitPlanPageSerializer, UnitPlanSerializer, LessonPlanSerializer, LessonPlanDetailSerializer, MaterialSerializer, UnitPlanTitleSerializer
 from .models import Subject, Resource, UnitPlan, LessonPlan, Material
 
 from rest_framework.views import APIView
@@ -86,6 +86,7 @@ class UnitPlanList(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 
 class UnitPlanDetail(APIView):
   def get(self, request, unitplan_id, *args, **kwargs):
@@ -119,6 +120,13 @@ class UnitPlanDetail(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+  
+  def patch(self, request, unitplan_id):
+    instance = UnitPlan.objects.get(id=unitplan_id)
+    serializer = UnitPlanTitleSerializer(instance, data=request.data, partial=True) # set partial=True to update a data partially
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 class ResourceList(APIView):
   def get(self, *args, **kwargs):
