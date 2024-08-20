@@ -5,7 +5,6 @@ from .models import Subject, Resource, UnitPlan, LessonPlan, Material
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from django_nextjs.render import render_nextjs_page_sync
 
 # SUBJECT
 class SubjectList(APIView):
@@ -269,7 +268,4 @@ class MaterialDetail(APIView):
 def subjects(request):
   all_subjects = Subject.objects.all
   return render(request, 'home.html', {'subjects': all_subjects})
-
-def index(request):
-    return render_nextjs_page_sync(request)
 
