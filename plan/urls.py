@@ -14,5 +14,5 @@ urlpatterns = [
     path('lessonplan/<int:lessonplan_id>/', LessonPlanDetail.as_view(), name='lesson_plan_detail'),
     path('material/', MaterialList.as_view(), name='material_detail'),
     path('material/<int:material_id>/', MaterialDetail.as_view(), name='delete_material_detail'),
-    path('', views.index, name="index"),
+    # path('', views.index, name="index"),
 ]
