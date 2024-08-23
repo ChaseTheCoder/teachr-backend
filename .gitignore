@@ -1,0 +1,10 @@
+# Django
+db.sqlite3
+
+# Environments 
+.env 
+.venv 
+/env 
+/venv 
+env/
+venv/
