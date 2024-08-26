@@ -5,13 +5,7 @@ from rest_framework import status
 from .models import UserProfile
 from .serializers import UserProfileSerializer
 
-
-class UserProfileDetail(APIView):
-	def get(self, request, *args, **kwargs):
-		user_profile = UserProfile.objects.get(user=request.user)
-		serializer = UserProfileSerializer(user_profile)
-		return Response(serializer.data, status=status.HTTP_200_OK)
-
+class PostUserProfileDetail(APIView):
 	def post(self, request, *args, **kwargs):
 		data = {
 			'auth0_user_id': request.data.get('auth0_user_id'),
@@ -25,6 +19,14 @@ class UserProfileDetail(APIView):
 			serializer.save()
 			return Response(serializer.data, status=status.HTTP_201_CREATED)
 		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+	
+class UserProfileDetail(APIView):
+	def get(self, request, auth0_user_id, *args, **kwargs):
+		queryset = UserProfile.objects.get(auth0_user_id=auth0_user_id)
+		if not queryset:
+			return Response({"error": "auth0_user_id header is missing"}, status=status.HTTP_400_BAD_REQUEST)
+		serializer_class = UserProfileSerializer(queryset)
+		return Response(serializer_class.data, status=status.HTTP_200_OK)
 
 	def patch(self, request, *args, **kwargs):
 		user_profile = UserProfile.objects.get(user=request.user)
@@ -40,7 +42,4 @@ class UserProfileDetail(APIView):
 			return Response(serializer.data, status=status.HTTP_200_OK)
 		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 	
-	def delete(self, request, *args, **kwargs):
-		user_profile = UserProfile.objects.get(user=request.user)
-		user_profile.delete()
-		return Response(status=status.HTTP_204_NO_CONTENT)
+	
