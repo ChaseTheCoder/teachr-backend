@@ -23,8 +23,6 @@ class PostUserProfileDetail(APIView):
 class UserProfileDetail(APIView):
 	def get(self, request, auth0_user_id, *args, **kwargs):
 		queryset = UserProfile.objects.get(auth0_user_id=auth0_user_id)
-		if not queryset:
-			return Response({"error": "auth0_user_id header is missing"}, status=status.HTTP_400_BAD_REQUEST)
 		serializer_class = UserProfileSerializer(queryset)
 		return Response(serializer_class.data, status=status.HTTP_200_OK)
 

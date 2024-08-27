@@ -8,7 +8,8 @@ from rest_framework import status
 
 class SubjectList(APIView):
   def get(self, request, *args, **kwargs):
-    queryset = Subject.objects.all()
+    user_id = request.META.get('HTTP_USER_ID')
+    queryset = Subject.objects.filter(user_id=user_id)
     serializer_class = SubjectPageSerializer(queryset, many=True)
     return Response(serializer_class.data, status=status.HTTP_200_OK)
 
