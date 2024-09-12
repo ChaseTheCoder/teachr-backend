@@ -50,7 +50,7 @@ class UnitPlanSerializer(serializers.ModelSerializer):
 class UnitPlanTitleSerializer(serializers.ModelSerializer):
   class Meta:
     model = UnitPlan
-    fields = ('id', 'user_id', 'title', 'overview')
+    fields = ('id', 'user_id', 'title')
 
 class SubjectPageSerializer(serializers.ModelSerializer):
   units = UnitPlanTitleSerializer(many=True)
@@ -64,4 +64,18 @@ class SubjectSerializer(serializers.ModelSerializer):
   class Meta:
     model = Subject
     fields = ('id', 'user_id', 'subject', 'grade')
+
+
+
+class PlanUnitTitleSerializer(serializers.ModelSerializer):
+  lessons = LessonPlanTitleSerializer(many=True)
+  class Meta:
+    model = UnitPlan
+    fields = ('id', 'user_id', 'title', 'lessons')
+
+class PlansSerializer(serializers.ModelSerializer):
+  units = PlanUnitTitleSerializer(many=True)
+  class Meta:
+    model = Subject
+    fields = ('id', 'user_id', 'subject', 'grade', 'units')
 
