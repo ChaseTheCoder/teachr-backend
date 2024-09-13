@@ -31,37 +31,51 @@ class LessonPlanSerializer(serializers.ModelSerializer):
 class LessonPlanTitleSerializer(serializers.ModelSerializer):
   class Meta:
     model = LessonPlan
-    fields = ('id', 'title')
+    fields = ('id', 'user_id', 'title')
 
 class UnitPlanPageSerializer(serializers.ModelSerializer):
   lessons = LessonPlanTitleSerializer(many=True)
   resources = ResourceSerializer(many=True)
   class Meta:
     model = UnitPlan
-    fields = ('id', 'title', 'overview', 'standard', 'lessons', 'resources')
+    fields = ('id', 'user_id', 'title', 'overview', 'standard', 'lessons', 'resources')
 
 class UnitPlanSerializer(serializers.ModelSerializer):
   class Meta:
     model = UnitPlan
-    fields = ('id', 'title', 'overview', 'standard', 'subject')
+    fields = ('id', 'user_id', 'title', 'overview', 'standard', 'subject')
 
 # SUBJECT
 
 class UnitPlanTitleSerializer(serializers.ModelSerializer):
   class Meta:
     model = UnitPlan
-    fields = ('id', 'title', 'overview')
+    fields = ('id', 'user_id', 'title')
 
 class SubjectPageSerializer(serializers.ModelSerializer):
   units = UnitPlanTitleSerializer(many=True)
 
   class Meta:
     model = Subject
-    fields = ('id', 'subject', 'grade', 'units')
+    fields = ('id', 'user_id', 'subject', 'grade', 'units')
 
 class SubjectSerializer(serializers.ModelSerializer):
 
   class Meta:
     model = Subject
-    fields = ('id', 'subject', 'grade')
+    fields = ('id', 'user_id', 'subject', 'grade')
+
+
+
+class PlanUnitTitleSerializer(serializers.ModelSerializer):
+  lessons = LessonPlanTitleSerializer(many=True)
+  class Meta:
+    model = UnitPlan
+    fields = ('id', 'user_id', 'title', 'lessons')
+
+class PlansSerializer(serializers.ModelSerializer):
+  units = PlanUnitTitleSerializer(many=True)
+  class Meta:
+    model = Subject
+    fields = ('id', 'user_id', 'subject', 'grade', 'units')
 

@@ -1,8 +1,9 @@
 from django.urls import path
 from . import views
-from .views import LessonPlanDetail, SubjectDetail, SubjectList, ResourceDetail, ResourceList, UnitPlanList, UnitPlanDetail, LessonPlanList, MaterialDetail, MaterialList
+from .views import LessonPlanDetail, PlansList, SubjectDetail, SubjectList, ResourceDetail, ResourceList, UnitPlanList, UnitPlanDetail, LessonPlanList, MaterialDetail, MaterialList
 
 urlpatterns = [
+    path('plans/', PlansList.as_view(), name='plans'),
     path('subjects/', views.subjects, name='subject'),
     path('subject/', SubjectList.as_view(), name='subject_list'),
     path('subject/<int:subject_id>/', SubjectDetail.as_view(), name='subject_detail'),

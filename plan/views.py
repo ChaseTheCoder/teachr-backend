@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from plan.serializers import SubjectPageSerializer, SubjectSerializer, ResourceSerializer, UnitPlanPageSerializer, UnitPlanSerializer, LessonPlanSerializer, LessonPlanDetailSerializer, MaterialSerializer, UnitPlanTitleSerializer
+from plan.serializers import PlansSerializer, SubjectPageSerializer, SubjectSerializer, ResourceSerializer, UnitPlanPageSerializer, UnitPlanSerializer, LessonPlanSerializer, LessonPlanDetailSerializer, MaterialSerializer, UnitPlanTitleSerializer
 from .models import Subject, Resource, UnitPlan, LessonPlan, Material
 
 from rest_framework.views import APIView
@@ -8,8 +8,28 @@ from rest_framework import status
 
 class SubjectList(APIView):
   def get(self, request, *args, **kwargs):
-    queryset = Subject.objects.all()
+    user_id = request.META.get('HTTP_USER_ID')
+    queryset = Subject.objects.filter(user_id=user_id)
     serializer_class = SubjectPageSerializer(queryset, many=True)
+    return Response(serializer_class.data, status=status.HTTP_200_OK)
+
+  def post(self, request, *args, **kwargs):
+    data = {
+      'subject': request.data.get('subject'), 
+      'grade': request.data.get('grade')
+    }
+    serializer = SubjectSerializer(data=data, partial=True)
+    if serializer.is_valid():
+      serializer.save()
+      return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class PlansList(APIView):
+  def get(self, request, *args, **kwargs):
+    user_id = request.META.get('HTTP_USER_ID')
+    queryset = Subject.objects.filter(user_id=user_id)
+    serializer_class = PlansSerializer(queryset, many=True)
     return Response(serializer_class.data, status=status.HTTP_200_OK)
 
   def post(self, request, *args, **kwargs):
