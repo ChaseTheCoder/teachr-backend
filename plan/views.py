@@ -35,12 +35,22 @@ class PlansList(APIView):
   def post(self, request, *args, **kwargs):
     data = {
       'subject': request.data.get('subject'), 
-      'grade': request.data.get('grade')
+      'grade': request.data.get('grade'),
+      'user_id': request.data.get('user_id')
     }
     serializer = SubjectSerializer(data=data, partial=True)
     if serializer.is_valid():
       serializer.save()
       return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+  
+  def patch(self, request, subject_id):
+    instance = Subject.objects.get(id=subject_id)
+    serializer = SubjectSerializer(instance, data=request.data, partial=True) 
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -64,7 +74,7 @@ class SubjectDetail(APIView):
 
   def patch(self, request, subject_id):
     instance = Subject.objects.get(id=subject_id)
-    serializer = SubjectSerializer(instance, data=request.data, partial=True) # set partial=True to update a data partially
+    serializer = SubjectSerializer(instance, data=request.data, partial=True) 
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -96,7 +106,8 @@ class UnitPlanList(APIView):
         'title': request.data.get('title'),
         'overview': '',
         'standard': '',
-        'subject': request.data.get('subject')
+        'subject': request.data.get('subject'),
+        'user_id': request.data.get('user_id')
     }
     serializer = UnitPlanSerializer(data=data, partial=True)
     if serializer.is_valid():
@@ -130,7 +141,8 @@ class UnitPlanDetail(APIView):
         'title': request.data.get('title'), 
         'overview': request.data.get('overview'),
         'standard': request.data.get('standard'),
-        'subject': request.data.get('subject')
+        'subject': request.data.get('subject'),
+        'user_id': request.data.get('user_id')
     }
     serializer = UnitPlanSerializer(data=data, partial=True)
     if serializer.is_valid():
@@ -196,7 +208,8 @@ class LessonPlanList(APIView):
         'standard': '', 
         'objective': '', 
         'body': '',
-        'unit_plan': request.data.get('unit_plan')
+        'unit_plan': request.data.get('unit_plan'),
+        'user_id': request.data.get('user_id')
     }
     serializer = LessonPlanDetailSerializer(data=data, partial=True)
     if serializer.is_valid():
