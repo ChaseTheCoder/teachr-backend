@@ -15,8 +15,9 @@ class SubjectList(APIView):
 
   def post(self, request, *args, **kwargs):
     data = {
-      'subject': request.data.get('subject'), 
-      'grade': request.data.get('grade')
+      'subject': '', 
+      'grade': '',
+      'user_id': request.data.get('user_id')
     }
     serializer = SubjectSerializer(data=data, partial=True)
     if serializer.is_valid():
@@ -32,28 +33,6 @@ class PlansList(APIView):
     serializer_class = PlansSerializer(queryset, many=True)
     return Response(serializer_class.data, status=status.HTTP_200_OK)
 
-  def post(self, request, *args, **kwargs):
-    data = {
-      'subject': request.data.get('subject'), 
-      'grade': request.data.get('grade'),
-      'user_id': request.data.get('user_id')
-    }
-    serializer = SubjectSerializer(data=data, partial=True)
-    if serializer.is_valid():
-      serializer.save()
-      return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-  
-  def patch(self, request, subject_id):
-    instance = Subject.objects.get(id=subject_id)
-    serializer = SubjectSerializer(instance, data=request.data, partial=True) 
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 class SubjectDetail(APIView):
   def get(self, request, subject_id, *args, **kwargs):
     queryset = Subject.objects.get(id=subject_id)
@@ -62,8 +41,9 @@ class SubjectDetail(APIView):
   
   def post(self, request, *args, **kwargs):
     data = {
-        'subject': request.data.get('subject'),
-        'grade': request.data.get('grade')
+      'subject': '', 
+      'grade': '',
+      'user_id': request.data.get('user_id')
     }
     serializer = SubjectSerializer(data=data, partial=True)
     if serializer.is_valid():
@@ -158,44 +138,6 @@ class UnitPlanDetail(APIView):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-class ResourceList(APIView):
-  def get(self, *args, **kwargs):
-    queryset = Resource.objects.all()
-    serializer_class = ResourceSerializer(queryset, many=True)
-    return Response(serializer_class.data, status=status.HTTP_200_OK)
-  
-  def post(self, request, *args, **kwargs):
-    data = {
-        'link': request.data.get('link'), 
-        'title': request.data.get('title'),
-        'unit_plan': request.data.get('unit_plan')
-    }
-    serializer = ResourceSerializer(data=data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-  
-class ResourceDetail(APIView):
-  def get(self, request, resource_id, *args, **kwargs):
-    queryset = Resource.objects.get(id=resource_id)
-    serializer_class = ResourceSerializer(queryset)
-    return Response(serializer_class.data, status=status.HTTP_200_OK)
-
-  def delete(self, request, resource_id,  *args, **kwargs):
-    instance = Resource.objects.get(id=resource_id)
-    if not instance:
-        return Response(
-            {"res": "Object with id does not exists"}, 
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    instance.delete()
-    return Response(
-      {"res": "Object deleted!"},
-      status=status.HTTP_200_OK
-    )
-
 class LessonPlanList(APIView):
   def get(self, *args, **kwargs):
     queryset = LessonPlan.objects.all()
@@ -245,59 +187,3 @@ class LessonPlanDetail(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class MaterialList(APIView):
-  def get(self, *args, **kwargs):
-    queryset = Material.objects.all()
-    serializer_class = MaterialSerializer(queryset, many=True)
-    return Response(serializer_class.data, status=status.HTTP_200_OK)
-  
-  def post(self, request, *args, **kwargs):
-    data = {
-        'title': request.data.get('title'),
-        'link': request.data.get('link'), 
-        'lesson_plan': request.data.get('lesson_plan')
-    }
-    serializer = MaterialSerializer(data=data, partial=True)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class MaterialDetail(APIView):
-  def get(self, request, material_id, *args, **kwargs):
-    queryset = Material.objects.get(id=material_id)
-    serializer_class = MaterialSerializer(queryset)
-    return Response(serializer_class.data, status=status.HTTP_200_OK)
-  
-  def post(self, request, *args, **kwargs):
-    data = {
-        'title': request.data.get('title'),
-        'link': request.data.get('link'), 
-        'lesson_plan': request.data.get('lesson_plan')
-    }
-    serializer = MaterialSerializer(data=data, partial=True)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-  def delete(self, request, material_id,  *args, **kwargs):
-    instance = Material.objects.get(id=material_id)
-    if not instance:
-        return Response(
-            {"res": "Object with id does not exists"}, 
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    instance.delete()
-    return Response(
-      {"res": "Object deleted!"},
-      status=status.HTTP_200_OK
-    )
-
-def subjects(request):
-  all_subjects = Subject.objects.all
-  return render(request, 'home.html', {'subjects': all_subjects})
-
