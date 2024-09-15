@@ -24,6 +24,6 @@ urlpatterns = [
     path('', include('auth0authorization.urls')),
     path('api-auth/', include('rest_framework.urls')),
     path('api/', include('plan.urls')),
-    path('userprofile/', include('userprofile.urls')),
     path('', include('plan.urls')),
+    path('v1/', include('plans.urls')),
 ]
