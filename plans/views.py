@@ -1,22 +1,28 @@
 from django.shortcuts import render
-from plan.serializers import PlansSerializer, SubjectPageSerializer, SubjectSerializer, ResourceSerializer, UnitPlanPageSerializer, UnitPlanSerializer, LessonPlanSerializer, LessonPlanDetailSerializer, MaterialSerializer, UnitPlanTitleSerializer
-from .models import Subject, Resource, UnitPlan, LessonPlan, Material
+from plans.serializer import LessonPlanDetailSerializer, LessonPlanSerializer, PlansSerializer, SubjectPageSerializer, SubjectSerializer, UnitPlanPageSerializer, UnitPlanSerializer
+from .models import Subject, UnitPlan, LessonPlan
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
+class PlansList(APIView):
+  def get(self, request, user_id, *args, **kwargs):
+    try:
+        queryset = Subject.objects.filter(user_id=user_id) 
+        serializer_class = PlansSerializer(queryset, many=True)
+        return Response(serializer_class.data, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 class SubjectList(APIView):
   def get(self, request, *args, **kwargs):
-    user_id = request.META.get('HTTP_USER_ID')
-    queryset = Subject.objects.filter(user_id=user_id)
+    queryset = Subject.objects.all()
     serializer_class = SubjectPageSerializer(queryset, many=True)
     return Response(serializer_class.data, status=status.HTTP_200_OK)
 
   def post(self, request, *args, **kwargs):
     data = {
-      'subject': request.data.get('subject'), 
-      'grade': request.data.get('grade'),
       'user_id': request.data.get('user_id')
     }
     serializer = SubjectSerializer(data=data, partial=True)
@@ -26,18 +32,14 @@ class SubjectList(APIView):
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class PlansList(APIView):
-  def get(self, request, *args, **kwargs):
-    user_id = request.META.get('HTTP_USER_ID')
-    queryset = Subject.objects.filter(user_id=user_id)
-    serializer_class = PlansSerializer(queryset, many=True)
-    return Response(serializer_class.data, status=status.HTTP_200_OK)
-
 class SubjectDetail(APIView):
   def get(self, request, subject_id, *args, **kwargs):
-    queryset = Subject.objects.get(id=subject_id)
-    serializer_class = SubjectSerializer(queryset)
-    return Response(serializer_class.data, status=status.HTTP_200_OK)
+    try:
+        queryset = Subject.objects.get(id=subject_id)
+        serializer_class = SubjectSerializer(queryset)
+        return Response(serializer_class.data, status=status.HTTP_200_OK)
+    except Subject.DoesNotExist:
+        return Response({"error": "Object with id does not exist"}, status=status.HTTP_404_NOT_FOUND)
   
   def post(self, request, *args, **kwargs):
     data = {
@@ -83,7 +85,7 @@ class UnitPlanList(APIView):
   
   def post(self, request, *args, **kwargs):
     data = {
-        'title': request.data.get('title'),
+        'title': '',
         'overview': '',
         'standard': '',
         'subject': request.data.get('subject'),
