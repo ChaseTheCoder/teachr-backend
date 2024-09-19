@@ -23,6 +23,7 @@ class SubjectList(APIView):
 
   def post(self, request, *args, **kwargs):
     data = {
+      'subject': 'New Subject',
       'user_id': request.data.get('user_id')
     }
     serializer = SubjectSerializer(data=data, partial=True)
@@ -85,7 +86,7 @@ class UnitPlanList(APIView):
   
   def post(self, request, *args, **kwargs):
     data = {
-        'title': '',
+        'title': 'New Unit',
         'overview': '',
         'standard': '',
         'subject': request.data.get('subject'),
@@ -120,7 +121,7 @@ class UnitPlanDetail(APIView):
   
   def post(self, request, *args, **kwargs):
     data = {
-        'title': request.data.get('title'), 
+        'title': request.data.get('title'),
         'overview': request.data.get('overview'),
         'standard': request.data.get('standard'),
         'subject': request.data.get('subject'),
@@ -148,7 +149,7 @@ class LessonPlanList(APIView):
   
   def post(self, request, *args, **kwargs):
     data = {
-        'title': request.data.get('title'),
+        'title': 'New Lesson',
         'standard': '', 
         'objective': '', 
         'body': '',
