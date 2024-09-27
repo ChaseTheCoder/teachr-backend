@@ -23,7 +23,5 @@ urlpatterns = [
     # path('__debug__/', include(debug_toolbar.urls)),
     path('', include('auth0authorization.urls')),
     path('api-auth/', include('rest_framework.urls')),
-    path('api/', include('plan.urls')),
-    path('', include('plan.urls')),
     path('v1/', include('plans.urls')),
 ]
