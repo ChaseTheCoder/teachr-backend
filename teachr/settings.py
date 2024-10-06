@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     # 'debug_toolbar',
     'rest_framework',
     'plans',
+    'user_profile', 
 ]
 
 SITE_ID = 1
