@@ -7,6 +7,3 @@ class UserProfile(models.Model):
   first_name = models.CharField(max_length=100, blank=True, default='')
   last_name = models.CharField(max_length=100, blank=True, default='')
   teacher_name = models.CharField(max_length=110, blank=True, default='')
-
-  def __str__(self):
-      return self.user.username

@@ -25,4 +25,10 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls')),
     path('v1/', include('plans.urls')),
     path('v1/', include('user_profile.urls')),
+    path('v1/', include('schedules.urls')),
 ]
+
+
+
+  
+
