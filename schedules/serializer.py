@@ -7,11 +7,6 @@ class SchoolYearSerializer(serializers.ModelSerializer):
         model = SchoolYear
         fields = '__all__'
 
-class SchoolDaySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SchoolDay
-        fields = '__all__'
-
 class SchoolDayWithClassesSerializer(serializers.ModelSerializer):
     classes = serializers.SerializerMethodField()
 
@@ -33,3 +28,9 @@ class SchoolDayClassSerializer(serializers.ModelSerializer):
         model = SchoolDayClass
         fields = '__all__'
 
+class SchoolDaySerializer(serializers.ModelSerializer):
+    school_day_classes = SchoolDayClassSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = SchoolDay
+        fields = '__all__'
