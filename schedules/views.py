@@ -1,7 +1,8 @@
+from venv import logger
 from django.shortcuts import render
 from rest_framework.views import APIView
-from schedules.models import SchoolDay
-from schedules.serializer import SchoolDaySerializer
+from schedules.models import SchoolClass, SchoolDay, SchoolDayClass
+from schedules.serializer import SchoolClassSerializer, SchoolDayClassSerializer, SchoolDaySerializer
 from schedules.models import SchoolYear
 from schedules.serializer import SchoolYearSerializer
 from rest_framework.response import Response
@@ -83,12 +84,94 @@ class SchoolDayList(APIView):
       return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
   
 class SchoolDayRange(APIView):
+  def get(self, request, school_year_id, *args, **kwargs):
+    dates = request.query_params.getlist('dates')
+    
+    if not dates:
+      return Response({"error": "Dates query parameter is required."}, status=status.HTTP_400_BAD_REQUEST)
+    
+    school_days = SchoolDay.objects.filter(school_year=school_year_id, date__in=dates)
+    school_day_data = []
+
+    for school_day in school_days:
+      school_day_serializer = SchoolDaySerializer(school_day)
+      school_day_classes = SchoolDayClass.objects.filter(school_day=school_day.id)
+      school_day_class_serializer = SchoolDayClassSerializer(school_day_classes, many=True)
+      school_day_data.append({
+        'school_day': school_day_serializer.data,
+        'school_day_classes': school_day_class_serializer.data
+      })
+
+    return Response(school_day_data, status=status.HTTP_200_OK)
+
+class SchoolClassList(APIView):
     def get(self, request, school_year_id, *args, **kwargs):
-        dates = request.query_params.getlist('dates')
-        
-        if not dates:
-            return Response({"error": "Dates query parameter is required."}, status=status.HTTP_400_BAD_REQUEST)
-        
-        queryset = SchoolDay.objects.filter(school_year=school_year_id, date__in=dates)
-        serializer = SchoolDaySerializer(queryset, many=True)
+        queryset = SchoolClass.objects.filter(school_year=school_year_id)
+        serializer = SchoolClassSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def post(self, request, school_year_id, *args, **kwargs):
+      titles = request.query_params.getlist('title')
+      
+      if not school_year_id or not titles:
+        return Response({"error": "SchoolYear and titles fields are required."}, status=status.HTTP_400_BAD_REQUEST)
+      
+      try:
+        school_year = SchoolYear.objects.get(id=school_year_id)
+      except SchoolYear.DoesNotExist:
+        return Response({"error": "No valid SchoolYear found."}, status=status.HTTP_400_BAD_REQUEST)
+      
+      school_classes = []
+      for title in titles:
+        if not title:
+          return Response({"error": "Each class must have a title."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        data = {
+          'title': title,
+          'school_year': school_year_id
+        }
+        serializer = SchoolClassSerializer(data=data, partial=True)
+        if serializer.is_valid():
+          school_classes.append(serializer)
+        else:
+          return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+      
+      for serializer in school_classes:
+        serializer.save()
+      
+      return Response({"message": "SchoolClasses created successfully."}, status=status.HTTP_201_CREATED)
+
+class BulkCreateSchoolDayClassView(APIView):
+    def post(self, request, school_year_id, *args, **kwargs):
+        classes_by_day = request.data
+
+        if not classes_by_day:
+            return Response({"error": "classes_by_day field is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            school_days = SchoolDay.objects.filter(school_year=school_year_id)
+        except SchoolDay.DoesNotExist:
+            return Response({"error": "No valid SchoolDays found for the given SchoolYear."}, status=status.HTTP_400_BAD_REQUEST)
+
+        school_day_classes = []
+        for school_day in school_days:
+            day_of_week = school_day.date.strftime('%A').lower()
+            classes = classes_by_day.get(day_of_week, [])
+            for order, school_class_id in enumerate(classes, start=1):
+                try:
+                    school_day_classes.append(SchoolDayClass(
+                        school_day=school_day,
+                        school_class_id=school_class_id,
+                        order=order
+                    ))
+                except Exception as e:
+                    logger.error(f"Error creating SchoolDayClass for {school_day.date}: {e}")
+                    return Response({"error": f"Error creating SchoolDayClass for {school_day.date}: {e}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        try:
+            SchoolDayClass.objects.bulk_create(school_day_classes)
+        except Exception as e:
+            logger.error(f"Error during bulk create: {e}")
+            return Response({"error": f"Error during bulk create: {e}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response({"message": "SchoolDayClasses created successfully."}, status=status.HTTP_201_CREATED)
