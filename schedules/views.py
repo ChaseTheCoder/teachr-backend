@@ -2,7 +2,7 @@ from venv import logger
 from django.shortcuts import render
 from rest_framework.views import APIView
 from schedules.models import SchoolClass, SchoolDay, SchoolDayClass
-from schedules.serializer import SchoolClassSerializer, SchoolDayClassSerializer, SchoolDaySerializer
+from schedules.serializer import SchoolClassSerializer, SchoolDayClassSerializer, SchoolDaySerializer, SchoolDayWithClassesSerializer
 from schedules.models import SchoolYear
 from schedules.serializer import SchoolYearSerializer
 from rest_framework.response import Response
@@ -103,6 +103,17 @@ class SchoolDayRange(APIView):
       })
 
     return Response(school_day_data, status=status.HTTP_200_OK)
+  
+class SchoolDayRangeWithClasses(APIView):
+  def get(self, request, school_year_id, *args, **kwargs):
+    dates = request.query_params.getlist('dates')
+    
+    if not dates:
+      return Response({"error": "Dates query parameter is required."}, status=status.HTTP_400_BAD_REQUEST)
+    
+    queryset = SchoolDay.objects.filter(school_year=school_year_id, date__in=dates)
+    serializer_class = SchoolDayWithClassesSerializer(queryset, many=True)
+    return Response(serializer_class.data, status=status.HTTP_200_OK)
 
 class SchoolClassList(APIView):
     def get(self, request, school_year_id, *args, **kwargs):
