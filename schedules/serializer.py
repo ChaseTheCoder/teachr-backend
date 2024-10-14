@@ -16,7 +16,14 @@ class SchoolDayWithClassesSerializer(serializers.ModelSerializer):
 
     def get_classes(self, obj):
         classes = SchoolDayClass.objects.filter(school_day=obj)
-        return SchoolDayClassSerializer(classes, many=True).data
+        return [
+            {
+                "id": school_day_class.id,
+                "school_class_title": school_day_class.school_class.title,
+                **SchoolDayClassSerializer(school_day_class).data
+            }
+            for school_day_class in classes
+        ]
 
 class SchoolClassSerializer(serializers.ModelSerializer):
     class Meta:
