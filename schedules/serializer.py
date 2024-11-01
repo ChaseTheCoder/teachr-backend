@@ -19,7 +19,7 @@ class SchoolDayWithClassesSerializer(serializers.ModelSerializer):
         return [
             {
                 "id": school_day_class.id,
-                "school_class_title": school_day_class.school_class.title,
+                "class_title": school_day_class.school_class.title,
                 **SchoolDayClassSerializer(school_day_class).data
             }
             for school_day_class in classes

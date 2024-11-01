@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'plans',
     'user_profile',
     'schedules',
+    'grade_levels',
 ]
 
 SITE_ID = 1
