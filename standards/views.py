@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import GradeLevels, IssuingAuthority, Subject, Domain, Standard
-from .serializers import IssuingAuthoritySerializer, GradeLevelsSerializer, SubjectSerializer, DomainSerializer, StandardSerializer, SubjectSerializerList
+from .serializers import DomainSerializerList, IssuingAuthoritySerializer, GradeLevelsSerializer, SubjectSerializer, DomainSerializer, StandardSerializer, SubjectSerializerList
 
 class IssuingAuthorityList(APIView):
   def get(self, request, pk=None):
@@ -105,20 +105,23 @@ class GradeLevelsList(APIView):
     grade_level = get_object_or_404(GradeLevels, pk=pk)
     grade_level.delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
-  
+
 class DomainList(APIView):
   def get(self, request, pk):
     domains = Domain.objects.filter(grade_levels__pk=pk)
-    serializer = DomainSerializer(domains, many=True)
+    serializer = DomainSerializerList(domains, many=True)
     return Response(serializer.data)
 
   def patch(self, request, pk):
-    domain = get_object_or_404(Domain, pk=pk)
-    serializer = DomainSerializer(domain, data=request.data, partial=True)
-    if serializer.is_valid():
-      serializer.save()
-      return Response(serializer.data)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+      domain = get_object_or_404(Domain, pk=pk)
+      serializer = DomainSerializer(domain, data=request.data, partial=True)
+      if serializer.is_valid():
+          domain = serializer.save()
+          if 'grade_levels' in request.data:
+              grade_levels = request.data['grade_levels']
+              domain.grade_levels.set(grade_levels)
+          return Response(serializer.data)
+      return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
   def delete(self, request, pk):
     domain = get_object_or_404(Domain, pk=pk)
@@ -126,6 +129,11 @@ class DomainList(APIView):
     return Response(status=status.HTTP_204_NO_CONTENT)
 
 class DomainBulkPost(APIView):
+  def get(self, request):
+    domains = Domain.objects.all()
+    serializer = DomainSerializer(domains, many=True)
+    return Response(serializer.data)
+
   def post(self, request):
     domains_data = request.data
     created_domains = []
@@ -139,3 +147,25 @@ class DomainBulkPost(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     return Response(created_domains, status=status.HTTP_201_CREATED)
+
+class StandardList(APIView):
+  def get(self, request, pk):
+    standards = Standard.objects.filter(domain__pk=pk)
+    serializer = StandardSerializer(standards, many=True)
+    return Response(serializer.data) 
+  
+  def post(self, request, pk):
+    domain = get_object_or_404(Domain, pk=pk)
+    standards_data = request.data
+    created_standards = []
+
+    for standard_data in standards_data:
+      standard_data['domain'] = domain.id
+      serializer = StandardSerializer(data=standard_data)
+      if serializer.is_valid():
+        serializer.save()
+        created_standards.append(serializer.data)
+      else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    return Response(created_standards, status=status.HTTP_201_CREATED)

@@ -26,6 +26,11 @@ class DomainSerializer(serializers.ModelSerializer):
         model = Domain
         fields = '__all__'
 
+class DomainSerializerList(serializers.ModelSerializer):
+    class Meta:
+        model = Domain
+        fields = ('id', 'title', 'code')
+
 class StandardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Standard
