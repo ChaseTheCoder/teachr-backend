@@ -27,8 +27,8 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', cast=bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS').split(',')
-# ALLOWED_HOSTS = ['localhost',]
+# ALLOWED_HOSTS = config('ALLOWED_HOSTS').split(',')
+ALLOWED_HOSTS = ['localhost',]
 
 
 # Application definition
@@ -46,7 +46,11 @@ INSTALLED_APPS = [
     'user_profile',
     'schedules',
     'grade_levels',
+    'standards',
 ]
+
+MEDIA_URL = '/media/'  
+MEDIA_ROOT = BASE_DIR / 'media'
 
 SITE_ID = 1
 

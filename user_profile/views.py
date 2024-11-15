@@ -1,3 +1,6 @@
+import io
+from PIL import Image
+from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from .models import UserProfile
 from .serializers import UserProfileSerializer
@@ -20,6 +23,8 @@ class UserProfileGetPost(APIView):
             'first_name': request.data.get('first_name'),
             'last_name': request.data.get('last_name'),
             'teacher_name': request.data.get('teacher_name'),
+            'title': request.data.get('title'),
+            'profile_pic': request.data.get('profile_pic') 
         }
         serializer = UserProfileSerializer(data=data, partial=True)
         if serializer.is_valid():
@@ -45,3 +50,23 @@ class UserProfileUpdate(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class UserProfilePicPatch(APIView):
+    def patch(self, request, id, *args, **kwargs):
+        user_profile = get_object_or_404(UserProfile, id=id)
+        profile_pic = request.FILES.get('profile_pic')
+
+        if profile_pic:
+            # Directly pass the file to the serializer
+            data = {'profile_pic': profile_pic}
+            
+            # Partial update
+            serializer = UserProfileSerializer(user_profile, data=data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        # Return a bad request if no file is uploaded
+        return Response({"detail": "No profile_pic file uploaded."}, status=status.HTTP_400_BAD_REQUEST)

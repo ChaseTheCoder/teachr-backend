@@ -27,4 +27,5 @@ urlpatterns = [
     path('v1/', include('user_profile.urls')),
     path('v1/', include('schedules.urls')),
     path('v1/', include('grade_levels.urls')),
+    path('v1/', include('standards.urls')),
 ]
