@@ -49,6 +49,9 @@ INSTALLED_APPS = [
     'standards',
 ]
 
+MEDIA_URL = '/media/'  
+MEDIA_ROOT = BASE_DIR / 'media'
+
 SITE_ID = 1
 
 MIDDLEWARE = [

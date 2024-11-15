@@ -7,3 +7,5 @@ class UserProfile(models.Model):
   first_name = models.CharField(max_length=100, blank=True, default='')
   last_name = models.CharField(max_length=100, blank=True, default='')
   teacher_name = models.CharField(max_length=110, blank=True, default='')
+  title = models.CharField(max_length=50, blank=True, default='')
+  profile_pic = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
