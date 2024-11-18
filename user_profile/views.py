@@ -51,6 +51,16 @@ class UserProfileUpdate(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def delete(self, request, id, *args, **kwargs):
+        try:
+            user_profile = UserProfile.objects.get(id=id)
+            user_profile.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except UserProfile.DoesNotExist:
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 class UserProfilePicPatch(APIView):
     def patch(self, request, id, *args, **kwargs):
         user_profile = get_object_or_404(UserProfile, id=id)
