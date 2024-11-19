@@ -1,0 +1,34 @@
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.shortcuts import get_object_or_404
+from .models import Post
+from .serializers import PostSerializer
+
+class PostByUser(APIView):
+    def get(self, request, user_id, *args, **kwargs):
+        posts = Post.objects.filter(user=user_id)
+        serializer = PostSerializer(posts, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, user_id, *args, **kwargs):
+        data = request.data.copy()
+        data['user'] = user_id
+        serializer = PostSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, post_id, *args, **kwargs):
+        post = get_object_or_404(Post, id=post_id)
+        serializer = PostSerializer(post, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, post_id, *args, **kwargs):
+      post = get_object_or_404(Post, id=post_id)
+      post.delete()
+      return Response(status=status.HTTP_204_NO_CONTENT)
