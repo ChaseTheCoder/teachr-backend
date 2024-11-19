@@ -30,6 +30,7 @@ urlpatterns = [
     path('v1/', include('schedules.urls')),
     path('v1/', include('grade_levels.urls')),
     path('v1/', include('standards.urls')),
+    path('v1/', include('posts.urls')),
 ]
 
 if settings.DEBUG:

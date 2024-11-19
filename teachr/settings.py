@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'schedules',
     'grade_levels',
     'standards',
+    'posts',
 ]
 
 SITE_ID = 1
