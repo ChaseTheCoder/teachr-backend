@@ -29,6 +29,18 @@ class PostByUser(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, post_id, *args, **kwargs):
-      post = get_object_or_404(Post, id=post_id)
-      post.delete()
-      return Response(status=status.HTTP_204_NO_CONTENT)
+        post = get_object_or_404(Post, id=post_id)
+        post.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+class PostFeed(APIView):
+    def get(self, request):
+        try:
+            posts = Post.objects.all()
+            serializer = PostSerializer(posts, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error fetching posts: {e}", exc_info=True)
+            return Response({"error": "An unexpected error occurred. Please try again later."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
