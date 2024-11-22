@@ -28,6 +28,12 @@ class PostByUser(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class PostDetail(APIView):
+    def get(self, request, post_id, *args, **kwargs):
+        post = get_object_or_404(Post, id=post_id)
+        serializer = PostSerializer(post)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     def delete(self, request, post_id, *args, **kwargs):
         post = get_object_or_404(Post, id=post_id)
         post.delete()
