@@ -83,7 +83,7 @@ class UserProfilePicPatch(APIView):
     
 class UserProfileBatchList(APIView):
     def get(self, request, *args, **kwargs):
-        ids = request.data.get('user_ids', [])
+        ids = request.query_params.getlist('user_ids')
         if not ids:
             return Response({"error": "No IDs provided"}, status=status.HTTP_400_BAD_REQUEST)
         
