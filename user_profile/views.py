@@ -3,7 +3,7 @@ from PIL import Image
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from .models import UserProfile
-from .serializers import UserProfileSerializer
+from .serializers import UserProfileSerializer, BasicUserProfileSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -80,3 +80,14 @@ class UserProfilePicPatch(APIView):
 
         # Return a bad request if no file is uploaded
         return Response({"detail": "No profile_pic file uploaded."}, status=status.HTTP_400_BAD_REQUEST)
+    
+class UserProfileBatchList(APIView):
+    def get(self, request, *args, **kwargs):
+        ids = request.data.get('user_ids', [])
+        if not ids:
+            return Response({"error": "No IDs provided"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Filter UserProfile objects by the provided IDs
+        queryset = UserProfile.objects.filter(id__in=ids)
+        serializer = BasicUserProfileSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
