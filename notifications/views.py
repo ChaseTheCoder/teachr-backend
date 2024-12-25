@@ -11,6 +11,17 @@ class NotificationList(APIView):
         serializer = NotificationSerializer(notifications, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    def patch(self, request, user_id, *args, **kwargs):
+        notifications = Notification.objects.filter(user=user_id, read=False)
+        notifications.update(read=True)
+        return Response(status=status.HTTP_200_OK)
+
+class UnreadNotificationsAndCount(APIView):
+    def get(self, request, user_id, *args, **kwargs):
+        notifications = Notification.objects.filter(user=user_id, read=False)
+        serializer = NotificationSerializer(notifications, many=True)
+        return Response({"notifications": serializer.data, "count": notifications.count()}, status=status.HTTP_200_OK)
+
 class NotificationDetail(APIView):
     def delete(self, request, notification_id, *args, **kwargs):
         notification = get_object_or_404(Notification, id=notification_id)
