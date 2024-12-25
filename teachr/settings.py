@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'schedules',
     'grade_levels',
     'standards',
+    'notifications',
     'posts',
 ]
 
