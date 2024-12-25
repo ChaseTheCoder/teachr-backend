@@ -2,6 +2,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
+
+from notifications.models import Notification
 from .models import Post, Comment
 from .serializers import PostSerializer, CommentSerializer
 
@@ -62,7 +64,13 @@ class CommentList(APIView):
         data['post'] = post_id
         serializer = CommentSerializer(data=data)
         if serializer.is_valid():
-            serializer.save()
+            comment = serializer.save()
+            post = get_object_or_404(Post, id=post_id)
+            Notification.objects.create(
+                user=post.user,
+                initiator=comment.user,
+                notification_type='comment'
+            )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
