@@ -13,3 +13,5 @@ class Notification(models.Model):
     notification_type = models.CharField(max_length=10, choices=NOTIFICATION_TYPES)
     timestamp = models.DateTimeField(auto_now_add=True)
     read = models.BooleanField(default=False)
+    url_id = models.CharField(max_length=36, null=True, blank=True)
+    sub_url_id = models.CharField(max_length=36, null=True, blank=True)
