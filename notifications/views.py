@@ -27,3 +27,9 @@ class NotificationDetail(APIView):
         notification = get_object_or_404(Notification, id=notification_id)
         notification.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    def patch(self, request, notification_id, *args, **kwargs):
+        notification = get_object_or_404(Notification, id=notification_id)
+        notification.read = True
+        notification.save()
+        return Response(status=status.HTTP_200_OK)
