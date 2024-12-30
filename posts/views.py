@@ -66,7 +66,7 @@ class CommentList(APIView):
         if serializer.is_valid():
             comment = serializer.save()
             post = get_object_or_404(Post, id=post_id)
-            if post.user != comment.initiator:
+            if post.user != comment.user:
                 Notification.objects.create(
                     user=post.user,
                     initiator=comment.user,
