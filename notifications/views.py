@@ -8,6 +8,11 @@ from .serializers import NotificationSerializer
 class NotificationList(APIView):
     def get(self, request, user_id, *args, **kwargs):
         notifications = Notification.objects.filter(user=user_id)
+        page = int(request.query_params.get('page', 1))
+        page_size = 3
+        start = (page - 1) * page_size
+        end = start + page_size
+        notifications = notifications.order_by('-timestamp')[start:end]
         serializer = NotificationSerializer(notifications, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -16,11 +21,10 @@ class NotificationList(APIView):
         notifications.update(read=True)
         return Response(status=status.HTTP_200_OK)
 
-class UnreadNotificationsAndCount(APIView):
+class UnreadNotificationsCount(APIView):
     def get(self, request, user_id, *args, **kwargs):
-        notifications = Notification.objects.filter(user=user_id, read=False)
-        serializer = NotificationSerializer(notifications, many=True)
-        return Response({"notifications": serializer.data, "count": notifications.count()}, status=status.HTTP_200_OK)
+        count = Notification.objects.filter(user=user_id, read=False).count()
+        return Response({"count": count}, status=status.HTTP_200_OK)
 
 class NotificationDetail(APIView):
     def delete(self, request, notification_id, *args, **kwargs):
