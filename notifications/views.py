@@ -9,7 +9,7 @@ class NotificationList(APIView):
     def get(self, request, user_id, *args, **kwargs):
         notifications = Notification.objects.filter(user=user_id)
         page = int(request.query_params.get('page', 1))
-        page_size = 3
+        page_size = 10
         start = (page - 1) * page_size
         end = start + page_size
         notifications = notifications.order_by('-timestamp')[start:end]
