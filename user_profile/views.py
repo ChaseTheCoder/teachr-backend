@@ -7,7 +7,10 @@ from .serializers import UserProfileSerializer, BasicUserProfileSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.decorators import permission_classes
+from rest_framework.permissions import AllowAny
 
+@permission_classes([AllowAny])
 class UserProfileGetPost(APIView):
     def get(self, request, auth0_id, *args, **kwargs):
         try:
@@ -80,7 +83,8 @@ class UserProfilePicPatch(APIView):
 
         # Return a bad request if no file is uploaded
         return Response({"detail": "No profile_pic file uploaded."}, status=status.HTTP_400_BAD_REQUEST)
-    
+
+@permission_classes([AllowAny])
 class UserProfileBatchList(APIView):
     def get(self, request, *args, **kwargs):
         ids = request.query_params.getlist('user_id')
