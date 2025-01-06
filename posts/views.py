@@ -48,7 +48,10 @@ class PostDetail(APIView):
 class PostFeed(APIView):
     def get(self, request):
         try:
-            posts = Post.objects.all()
+            page = int(request.query_params.get('page', 1))
+            page_size = int(request.query_params.get('page_size', 10))
+            offset = (page - 1) * page_size
+            posts = Post.objects.all().order_by('-timestamp')[offset:offset + page_size]
             serializer = PostSerializer(posts, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
