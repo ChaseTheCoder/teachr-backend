@@ -36,6 +36,7 @@ class UserProfileGetPost(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+@permission_classes([AllowAny])
 class UserProfileUpdate(APIView):
     def get(self, request, id, *args, **kwargs):
         try:
