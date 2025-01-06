@@ -2,11 +2,13 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-
+from rest_framework.decorators import permission_classes
+from rest_framework.permissions import AllowAny
 from notifications.models import Notification
 from .models import Post, Comment
 from .serializers import PostSerializer, CommentSerializer
 
+@permission_classes([AllowAny])
 class PostByUser(APIView):
     def get(self, request, user_id, *args, **kwargs):
         posts = Post.objects.filter(user=user_id)
@@ -30,6 +32,7 @@ class PostByUser(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+@permission_classes([AllowAny])
 class PostDetail(APIView):
     def get(self, request, post_id, *args, **kwargs):
         post = get_object_or_404(Post, id=post_id)
@@ -41,6 +44,7 @@ class PostDetail(APIView):
         post.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+@permission_classes([AllowAny])
 class PostFeed(APIView):
     def get(self, request):
         try:
@@ -53,6 +57,7 @@ class PostFeed(APIView):
             logger.error(f"Error fetching posts: {e}", exc_info=True)
             return Response({"error": "An unexpected error occurred. Please try again later."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@permission_classes([AllowAny])
 class CommentList(APIView):
     def get(self, request, post_id, *args, **kwargs):
         comments = Comment.objects.filter(post=post_id).order_by('timestamp')
