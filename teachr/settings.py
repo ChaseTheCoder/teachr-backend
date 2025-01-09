@@ -90,7 +90,10 @@ JWT_AUTH = {
     'JWT_AUTH_HEADER_PREFIX': 'Bearer',
 }
 
-CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "https://teachrlounge.com",
+]
 
 INTERNAL_IPS = [
     "127.0.0.1",
