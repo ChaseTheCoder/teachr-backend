@@ -32,6 +32,7 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS').split(',')
 # Application definition
 
 INSTALLED_APPS = [
+    'corsheaders',
     'django.contrib.admin',
     'django.contrib.sessions',
     'django.contrib.auth',
@@ -39,7 +40,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # 'debug_toolbar',
-    'corsheaders',
     'rest_framework',
     'plans',
     'user_profile',
@@ -54,10 +54,10 @@ SITE_ID = 1
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
-    # "debug_toolbar.middleware.DebugToolbarMiddleware",
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'django.middleware.security.SecurityMiddleware',
+    # "debug_toolbar.middleware.DebugToolbarMiddleware",
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
