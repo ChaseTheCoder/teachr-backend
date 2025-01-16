@@ -100,9 +100,20 @@ class SearchPosts(APIView):
             return Response({"error": "No search query provided."}, status=status.HTTP_400_BAD_REQUEST)
         
         title_matches = Post.objects.filter(title__icontains=query).annotate(rank=Value(1, output_field=IntegerField()))
-        body_matches = Post.objects.filter(body__icontains=query).exclude(id__in=title_matches.values_list('id', flat=True)).annotate(rank=Value(2, output_field=IntegerField()))
+        words = query.split()
+        additional_title_matches = Post.objects.none()
+        for word in words:
+            additional_title_matches = additional_title_matches.union(
+            Post.objects.filter(title__icontains=word).exclude(id__in=title_matches.values_list('id', flat=True)).annotate(rank=Value(1, output_field=IntegerField()))
+            )
+        body_matches = Post.objects.filter(body__icontains=query).exclude(id__in=title_matches.values_list('id', flat=True)).exclude(id__in=additional_title_matches.values_list('id', flat=True)).annotate(rank=Value(2, output_field=IntegerField()))
+        additional_body_matches = Post.objects.none()
+        for word in words:
+            additional_body_matches = additional_body_matches.union(
+            Post.objects.filter(body__icontains=word).exclude(id__in=title_matches.values_list('id', flat=True)).exclude(id__in=additional_title_matches.values_list('id', flat=True)).exclude(id__in=body_matches.values_list('id', flat=True)).annotate(rank=Value(2, output_field=IntegerField()))
+            )
         
-        posts = title_matches.union(body_matches).order_by('rank', '-timestamp')
+        posts = title_matches.union(body_matches).union(additional_title_matches).union(additional_body_matches).order_by('rank', '-timestamp')
         
         serializer = PostSerializer(posts, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
