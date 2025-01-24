@@ -96,6 +96,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://teachrlounge.com",
     "https://teachr-frontend-vi7y.onrender.com",
     "https://teacher-lounge.com",
+    "https://www.teacher-lounge.com",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
