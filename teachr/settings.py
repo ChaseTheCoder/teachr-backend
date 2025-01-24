@@ -94,6 +94,8 @@ JWT_AUTH = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "https://teachrlounge.com",
+    "https://teachr-frontend-vi7y.onrender.com",
+    "https://teacher-lounge.com",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
