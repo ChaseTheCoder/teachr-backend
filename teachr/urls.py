@@ -32,6 +32,7 @@ urlpatterns = [
     path('v1/', include('standards.urls')),
     path('v1/', include('posts.urls')),
     path('v1/', include('notifications.urls')),
+    path('v1/', include('school_domains.urls')),
 ]
 
 if settings.DEBUG:

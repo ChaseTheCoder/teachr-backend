@@ -96,3 +96,19 @@ class UserProfileBatchList(APIView):
         queryset = UserProfile.objects.filter(id__in=ids)
         serializer = BasicUserProfileSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+@permission_classes([AllowAny])
+class VerifyProfile(APIView):
+    def patch(self, request, id, *args, **kwargs):
+        user_profile = get_object_or_404(UserProfile, id=id)
+        verified_email = request.data.get('verified_email')
+        
+        if not verified_email:
+            return Response({"detail": "verified_email is required."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        user_profile.verified = True
+        user_profile.email_domain = verified_email.split('@')[1]
+        user_profile.verified_email = verified_email
+        user_profile.save()
+        
+        return Response({"detail": "Profile verified."}, status=status.HTTP_200_OK)
