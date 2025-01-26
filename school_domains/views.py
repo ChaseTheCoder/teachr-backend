@@ -19,7 +19,7 @@ class VerifyEmailView(APIView):
             
             if SchoolDomain.objects.filter(domain=domain).exists() or domain == 'teacher-lounge.com':
                 # Send verification email
-                verification_link = "http://www.teacher-lounge.com/verify?email=" + email + "&user_id=" + user_id
+                verification_link = "http://www.teacher-lounge.com/profile/verify_email?email=" + email + "&user_id=" + user_id
                 html_message = f"""
                 <html>
                 <body>

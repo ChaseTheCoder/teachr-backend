@@ -9,7 +9,7 @@ urlpatterns = [
     path('profile/<str:id>', UserProfileUpdate.as_view(), name='user_profile_update'),
     path('profile_pic/<str:id>', UserProfilePicPatch.as_view(), name='user_profile_update'),
     path('profile_batch/', UserProfileBatchList.as_view(), name='user_profile_update'),
-    path('profile/verify_email/<str:id>', VerifyProfile.as_view(), name='verify_email'),
+    path('verify/<str:id>', VerifyProfile.as_view(), name='verify_email'),
 ]
 
 urlpatterns_str = str(urlpatterns)
