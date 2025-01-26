@@ -8,3 +8,4 @@ class SchoolDomainSerializer(serializers.ModelSerializer):
 
 class EmailSerializer(serializers.Serializer):
     email = serializers.EmailField()
+    user_id = serializers.CharField()

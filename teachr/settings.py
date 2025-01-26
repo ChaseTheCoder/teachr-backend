@@ -190,13 +190,13 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 # Email settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST = config("EMAIL_HOST_VALUE")
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False  # Ensure this is set to False
-EMAIL_HOST_USER = 'chasesheaff@teacher-lounge.com'
-EMAIL_HOST_PASSWORD = 'ieur hqit uems ksfo'
-DEFAULT_FROM_EMAIL = 'chasesheaff@teacher-lounge.com'
+EMAIL_HOST_USER = config("EMAIL_HOST_USER_VALUE")
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD_VALUE")
+DEFAULT_FROM_EMAIL = config("EMAIL_HOST_USER_VALUE")
 
 # Configure SSL context
 EMAIL_SSL_CONTEXT = ssl.create_default_context()
