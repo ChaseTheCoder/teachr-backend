@@ -9,4 +9,4 @@ class UserProfileSerializer(serializers.ModelSerializer):
 class BasicUserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
-        fields = ('id', 'teacher_name', 'title')
+        fields = ('id', 'teacher_name', 'title', 'verified')
