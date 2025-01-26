@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path, include
-from .views import UserProfileGetPost, UserProfilePicPatch, UserProfileUpdate, UserProfileBatchList
+from .views import UserProfileGetPost, UserProfilePicPatch, UserProfileUpdate, UserProfileBatchList, VerifyProfile
 
 
 urlpatterns = [
@@ -9,6 +9,7 @@ urlpatterns = [
     path('profile/<str:id>', UserProfileUpdate.as_view(), name='user_profile_update'),
     path('profile_pic/<str:id>', UserProfilePicPatch.as_view(), name='user_profile_update'),
     path('profile_batch/', UserProfileBatchList.as_view(), name='user_profile_update'),
+    path('profile/verify_email/<str:id>', VerifyProfile.as_view(), name='verify_email'),
 ]
 
 urlpatterns_str = str(urlpatterns)

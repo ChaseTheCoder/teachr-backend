@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import ssl
 import dj_database_url
 from decouple import config
 
@@ -28,6 +29,8 @@ SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS').split(',')
+
+OPENAI_API_KEY = config("OPENAI_API_KEY")
 
 # Application definition
 
@@ -48,6 +51,7 @@ INSTALLED_APPS = [
     'standards',
     'notifications',
     'posts',
+    'school_domains',
 ]
 
 SITE_ID = 1
@@ -183,3 +187,16 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # media files
 MEDIA_URL = '/media/'  
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Email settings
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False  # Ensure this is set to False
+EMAIL_HOST_USER = 'chasesheaff@teacher-lounge.com'
+EMAIL_HOST_PASSWORD = 'ieur hqit uems ksfo'
+DEFAULT_FROM_EMAIL = 'chasesheaff@teacher-lounge.com'
+
+# Configure SSL context
+EMAIL_SSL_CONTEXT = ssl.create_default_context()
