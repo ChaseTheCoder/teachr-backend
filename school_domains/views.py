@@ -9,9 +9,17 @@ from rest_framework.permissions import AllowAny
 from django.core.mail import send_mail
 from django.conf import settings
 from .models import SchoolDomain
-from .serializers import EmailSerializer
+from .serializers import EmailSerializer, SchoolDomainSerializer
 import openai
 from rest_framework.permissions import IsAuthenticated
+
+class SchoolDomainListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        school_domains = SchoolDomain.objects.all()
+        serializer = SchoolDomainSerializer(school_domains, many=True)
+        return Response(serializer.data)
 
 def generate_html_message(verification_link):
     return f"""
