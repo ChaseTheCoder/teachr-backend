@@ -57,7 +57,7 @@ class VerifyEmailView(APIView):
                     fail_silently=False,
                     html_message=html_message,
                 )
-                return Response({"message": "Verification email sent."}, status=status.HTTP_200_OK)
+                return Response({"status": "success", "message": "Verification email sent. Domain in DB."}, status=status.HTTP_200_OK)
             else:
                 # Leverage OpenAI to check if the domain is valid
                 client = openai.OpenAI(
@@ -95,9 +95,9 @@ class VerifyEmailView(APIView):
                                 fail_silently=False,
                                 html_message=html_message,
                             )
-                            return Response({"message": "Verification email sent."}, status=status.HTTP_200_OK)
+                            return Response({"status": "success", "message": "Verification email sent. Domain added to DB."}, status=status.HTTP_200_OK)
                     except json.JSONDecodeError:
                         pass
                 else:
-                    return Response({"error": "Invalid school domain."}, status=status.HTTP_400_BAD_REQUEST)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({"status": "invalid", "message": "Invalid school domain."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"status": "error", "message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
