@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import AllowAny
 from notifications.models import Notification
+from user_profile.models import UserProfile
 from .models import Post, Comment
 from .serializers import PostSerializer, CommentSerializer
 from django.db.models import Q, Value, IntegerField
@@ -13,7 +14,7 @@ from django.db.models import Q, Value, IntegerField
 class PostByUser(APIView):
     def get(self, request, user_id, *args, **kwargs):
         posts = Post.objects.filter(user=user_id)
-        serializer = PostSerializer(posts, many=True)
+        serializer = PostSerializer(posts, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request, user_id, *args, **kwargs):
@@ -37,7 +38,7 @@ class PostByUser(APIView):
 class PostDetail(APIView):
     def get(self, request, post_id, *args, **kwargs):
         post = get_object_or_404(Post, id=post_id)
-        serializer = PostSerializer(post)
+        serializer = PostSerializer(post, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request, post_id, *args, **kwargs):
@@ -53,7 +54,7 @@ class PostFeed(APIView):
             page_size = int(request.query_params.get('page_size', 10))
             offset = (page - 1) * page_size
             posts = Post.objects.all().order_by('-timestamp')[offset:offset + page_size]
-            serializer = PostSerializer(posts, many=True)
+            serializer = PostSerializer(posts, many=True, context={'request': request})
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             import logging
@@ -65,7 +66,7 @@ class PostFeed(APIView):
 class CommentList(APIView):
     def get(self, request, post_id, *args, **kwargs):
         comments = Comment.objects.filter(post=post_id).order_by('timestamp')
-        serializer = CommentSerializer(comments, many=True)
+        serializer = CommentSerializer(comments, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request, post_id, *args, **kwargs):
@@ -119,5 +120,67 @@ class SearchPosts(APIView):
         
         posts = title_matches.union(body_matches).union(additional_title_matches).union(additional_body_matches).order_by('rank', '-timestamp')[offset:offset + page_size]
         
-        serializer = PostSerializer(posts, many=True)
+        serializer = PostSerializer(posts, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class UpdatePostVote(APIView):
+    def patch(self, request, post_id, *args, **kwargs):
+        post = get_object_or_404(Post, id=post_id)
+        user_id = request.data.get('user')
+        action = request.data.get('action')
+        
+        if not user_id or not action:
+            return Response({"status": "error", "message": "User and action are required."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        user = get_object_or_404(UserProfile, id=user_id)
+        
+        if action == 'upvote':
+            if user in post.upvotes.all():
+                post.upvotes.remove(user)
+            else:
+                post.upvotes.add(user)
+                if user in post.downvotes.all():
+                    post.downvotes.remove(user)
+        elif action == 'downvote':
+            if user in post.downvotes.all():
+                post.downvotes.remove(user)
+            else:
+                post.downvotes.add(user)
+                if user in post.upvotes.all():
+                    post.upvotes.remove(user)
+        else:
+            return Response({"status": "error", "message": "Invalid vote type."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        post.save()
+        return Response({"status": "success", "message": "Post vote successful."}, status=status.HTTP_200_OK)
+
+class UpdateCommentVote(APIView):
+    def patch(self, request, comment_id, *args, **kwargs):
+        comment = get_object_or_404(Comment, id=comment_id)
+        user_id = request.data.get('user')
+        action = request.data.get('action')
+
+        if not user_id or not action:
+            return Response({"status": "error", "message": "User and action are required."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        user = get_object_or_404(UserProfile, id=user_id)
+        
+        if action == 'upvote':
+            if user in comment.upvotes.all():
+                comment.upvotes.remove(user)
+            else:
+                comment.upvotes.add(user)
+                if user in comment.downvotes.all():
+                    comment.downvotes.remove(user)
+        elif action == 'downvote':
+            if user in comment.downvotes.all():
+                comment.downvotes.remove(user)
+            else:
+                comment.downvotes.add(user)
+                if user in comment.upvotes.all():
+                    comment.upvotes.remove(user)
+        else:
+            return Response({"status": "error", "message": "Invalid vote type."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        comment.save()
+        return Response({"status": "success", "message": "Comment vote successful."}, status=status.HTTP_200_OK)
