@@ -1,3 +1,4 @@
+import logging
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -141,6 +142,16 @@ class UpdatePostVote(APIView):
                 post.upvotes.add(user)
                 if user in post.downvotes.all():
                     post.downvotes.remove(user)
+                if post.user.id != user_id:
+                    Notification.objects.update_or_create(
+                        notification_type='upvote_post',
+                        user=post.user,
+                        url_id=str(post_id),
+                        sub_url_id=None,
+                        defaults={
+                            'read': False,
+                        }
+                    )
         elif action == 'downvote':
             if user in post.downvotes.all():
                 post.downvotes.remove(user)
@@ -172,6 +183,16 @@ class UpdateCommentVote(APIView):
                 comment.upvotes.add(user)
                 if user in comment.downvotes.all():
                     comment.downvotes.remove(user)
+                if comment.user.id != user_id:
+                    Notification.objects.update_or_create(
+                        notification_type='upvote_comment',
+                        user=comment.user,
+                        url_id=str(comment.post.id),
+                        sub_url_id=str(comment.id),
+                        defaults={
+                            'read': False,
+                        }
+                    )
         elif action == 'downvote':
             if user in comment.downvotes.all():
                 comment.downvotes.remove(user)
@@ -180,6 +201,8 @@ class UpdateCommentVote(APIView):
                 if user in comment.upvotes.all():
                     comment.upvotes.remove(user)
         else:
+            logger = logging.getLogger(__name__)
+            logger.error(f"Invalid vote type: {action} for user: {user_id} on comment: {comment_id}")
             return Response({"status": "error", "message": "Invalid vote type."}, status=status.HTTP_400_BAD_REQUEST)
         
         comment.save()
