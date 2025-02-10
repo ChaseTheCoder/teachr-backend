@@ -6,10 +6,11 @@ class PostSerializer(serializers.ModelSerializer):
     downvotes = serializers.SerializerMethodField()
     has_upvoted = serializers.SerializerMethodField()
     has_downvoted = serializers.SerializerMethodField()
+    comments = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
-        fields = ['id', 'user', 'title', 'body', 'timestamp', 'upvotes', 'downvotes', 'has_upvoted', 'has_downvoted']
+        fields = ['id', 'user', 'title', 'body', 'timestamp', 'upvotes', 'downvotes', 'has_upvoted', 'has_downvoted', 'comments']
 
     def get_upvotes(self, obj):
         return obj.upvotes.count()
@@ -28,6 +29,9 @@ class PostSerializer(serializers.ModelSerializer):
         if user_id:
             return obj.downvotes.filter(id=user_id).exists()
         return None
+    
+    def get_comments(self, obj):
+        return obj.comments.count()
 
 class CommentSerializer(serializers.ModelSerializer):
     upvotes = serializers.SerializerMethodField()
