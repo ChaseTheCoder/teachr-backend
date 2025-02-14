@@ -10,6 +10,7 @@ from user_profile.models import UserProfile
 from .models import Post, Comment
 from .serializers import PostSerializer, CommentSerializer
 from django.db.models import Q, Value, IntegerField
+from django.db.models import Count
 
 @permission_classes([AllowAny])
 class PostByUser(APIView):
@@ -66,7 +67,9 @@ class PostFeed(APIView):
 @permission_classes([AllowAny])
 class CommentList(APIView):
     def get(self, request, post_id, *args, **kwargs):
-        comments = Comment.objects.filter(post=post_id).order_by('timestamp')
+        comments = Comment.objects.filter(post=post_id)\
+            .annotate(upvote_count=Count('upvotes'))\
+            .order_by('-upvote_count', 'timestamp')
         serializer = CommentSerializer(comments, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
