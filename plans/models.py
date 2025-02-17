@@ -1,14 +1,11 @@
 import uuid
 from django.db import models
 
-from grade_levels.models import GradeLevel
-
 class Subject(models.Model):
   id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
   user_id = models.CharField(max_length=250)
   subject = models.CharField(max_length=250, blank=True, default='')
   grade = models.CharField(max_length=50, blank=True, default='')
-  grade_levels = models.ManyToManyField(GradeLevel, related_name='subjects', blank=True)
 
   # defines whatis displayed on admin
   def __str__(self):
