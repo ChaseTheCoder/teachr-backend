@@ -43,13 +43,13 @@ class SubjectPageSerializer(serializers.ModelSerializer):
 
   class Meta:
     model = Subject
-    fields = ('id', 'user_id', 'subject', 'grade', 'grade_levels', 'units')
+    fields = ('id', 'user_id', 'subject', 'grade', 'units')
 
 class SubjectSerializer(serializers.ModelSerializer):
 
   class Meta:
     model = Subject
-    fields = ('id', 'user_id', 'subject', 'grade', 'grade_levels')
+    fields = ('id', 'user_id', 'subject', 'grade')
 
 
 
@@ -63,5 +63,5 @@ class PlansSerializer(serializers.ModelSerializer):
   units = PlanUnitTitleSerializer(many=True)
   class Meta:
     model = Subject
-    fields = ('id', 'user_id', 'subject', 'grade', 'grade_levels', 'units')
+    fields = ('id', 'user_id', 'subject', 'grade', 'units')
 

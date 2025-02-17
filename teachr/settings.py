@@ -47,8 +47,6 @@ INSTALLED_APPS = [
     'plans',
     'user_profile',
     'schedules',
-    'grade_levels',
-    'standards',
     'notifications',
     'posts',
     'school_domains',
