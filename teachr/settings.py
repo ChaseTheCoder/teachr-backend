@@ -32,6 +32,14 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS').split(',')
 
 OPENAI_API_KEY = config("OPENAI_API_KEY")
 
+if DEBUG:
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = BASE_DIR / 'media'
+else:
+    # Render persistent disk settings
+    MEDIA_URL = '/media/'
+
+
 # Application definition
 
 INSTALLED_APPS = [

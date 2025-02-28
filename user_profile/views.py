@@ -1,4 +1,6 @@
 import io
+from rest_framework.parsers import MultiPartParser, FormParser
+import os
 from PIL import Image
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
@@ -41,14 +43,14 @@ class UserProfileUpdate(APIView):
     def get(self, request, id, *args, **kwargs):
         try:
             queryset = UserProfile.objects.get(id=id)
-            serializer_class = UserProfileSerializer(queryset)
+            serializer_class = UserProfileSerializer(queryset, context={'request': request})
             return Response(serializer_class.data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"user_profile error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def patch(self, request, id):
         instance = UserProfile.objects.get(id=id)
-        serializer = UserProfileSerializer(instance, data=request.data, partial=True) 
+        serializer = UserProfileSerializer(instance, data=request.data, context={'request': request}, partial=True) 
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -112,3 +114,36 @@ class VerifyProfile(APIView):
         user_profile.save()
         
         return Response({"detail": "Profile verified."}, status=status.HTTP_200_OK)
+
+@permission_classes([AllowAny])
+class ProfileImageUpload(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+
+    def post(self, request, id, *args, **kwargs):
+        user_profile = get_object_or_404(UserProfile, id=id)
+        
+        if 'profile_pic' not in request.FILES:
+            return Response(
+                {'error': 'No image provided'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Delete old image if it exists
+        if user_profile.profile_pic:
+            if os.path.isfile(user_profile.profile_pic.path):
+                os.remove(user_profile.profile_pic.path)
+
+        try:
+            user_profile.profile_pic = request.FILES['profile_pic']
+            user_profile.save()
+            
+            return Response({
+                'message': 'Profile image uploaded successfully',
+                'image_url': request.build_absolute_uri(user_profile.profile_pic.url)
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {'error': str(e)}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
