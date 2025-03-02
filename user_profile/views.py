@@ -17,7 +17,7 @@ class UserProfileGetPost(APIView):
     def get(self, request, auth0_id, *args, **kwargs):
         try:
             queryset = UserProfile.objects.get(auth0_id=auth0_id)
-            serializer_class = UserProfileSerializer(queryset)
+            serializer_class = UserProfileSerializer(queryset, context={'request': request})
             return Response(serializer_class.data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"user_profile error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -96,7 +96,7 @@ class UserProfileBatchList(APIView):
         
         # Filter UserProfile objects by the provided IDs
         queryset = UserProfile.objects.filter(id__in=ids)
-        serializer = BasicUserProfileSerializer(queryset, many=True)
+        serializer = BasicUserProfileSerializer(queryset, context={'request': request}, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
 @permission_classes([AllowAny])
