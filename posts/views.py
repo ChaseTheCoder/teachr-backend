@@ -27,7 +27,7 @@ class TagList(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-class TagSearch(APIView):
+class TagGetOrCreate(APIView):
     def post(self, request, *args, **kwargs):
         try:
             # Get tag from request and convert to lowercase
@@ -58,6 +58,28 @@ class TagSearch(APIView):
             logger.error(f"Error processing tag: {e}", exc_info=True)
             return Response(
                 {"error": "An error occurred while processing the tag"}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+class TagSearch(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            query = request.query_params.get('query', '').lower().strip()
+            if not query:
+                return Response([], status=status.HTTP_200_OK)
+
+            matching_tags = Tag.objects.filter(
+                tag__icontains=query
+            ).order_by('tag')[:6]  # Limit to 6 results
+
+            serializer = TagSerializer(matching_tags, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error searching tags: {e}", exc_info=True)
+            return Response(
+                {"error": "An error occurred while searching tags."}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
