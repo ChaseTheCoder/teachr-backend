@@ -1,5 +1,10 @@
 from rest_framework import serializers
-from .models import Post, Comment
+from .models import Tag, Post, Comment
+
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = ['id', 'tag']
 
 class PostSerializer(serializers.ModelSerializer):
     upvotes = serializers.SerializerMethodField()
@@ -10,7 +15,15 @@ class PostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ['id', 'user', 'title', 'body', 'timestamp', 'upvotes', 'downvotes', 'has_upvoted', 'has_downvoted', 'comments']
+        fields = ['id', 'user', 'title', 'body', 'timestamp', 'upvotes', 'downvotes', 'has_upvoted', 'has_downvoted', 'comments', 'tags']
+        extra_kwargs = {'tags': {'required': False}}
+
+    def create(self, validated_data):
+        tags = validated_data.pop('tags', [])
+        post = Post.objects.create(**validated_data)
+        if tags:
+            post.tags.set(tags)
+        return post
 
     def get_upvotes(self, obj):
         return obj.upvotes.count()

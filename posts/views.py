@@ -7,10 +7,59 @@ from rest_framework.decorators import permission_classes
 from rest_framework.permissions import AllowAny
 from notifications.models import Notification
 from user_profile.models import UserProfile
-from .models import Post, Comment
-from .serializers import PostSerializer, CommentSerializer
+from .models import Post, Comment, Tag
+from .serializers import PostSerializer, CommentSerializer, TagSerializer
 from django.db.models import Q, Value, IntegerField
 from django.db.models import Count
+
+@permission_classes([AllowAny])
+class TagList(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            tags = Tag.objects.all()
+            serializer = TagSerializer(tags, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error fetching tags: {e}", exc_info=True)
+            return Response(
+                {"error": "An unexpected error occurred while fetching tags."}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+class TagSearch(APIView):
+    def post(self, request, *args, **kwargs):
+        try:
+            # Get tag from request and convert to lowercase
+            tag_name = request.data.get('tag', '').lower().strip()
+            
+            if not tag_name:
+                return Response(
+                    {"error": "Tag name is required"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Try to get existing tag or create new one
+            tag, created = Tag.objects.get_or_create(
+                tag=tag_name
+            )
+
+            serializer = TagSerializer(tag)
+            status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
+            
+            return Response({
+                "id": tag.id,
+                "tag": tag.tag,
+                "created": created
+            }, status=status_code)
+
+        except Exception as e:
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error processing tag: {e}", exc_info=True)
+            return Response(
+                {"error": "An error occurred while processing the tag"}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 @permission_classes([AllowAny])
 class PostByUser(APIView):

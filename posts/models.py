@@ -2,6 +2,10 @@ import uuid
 from django.db import models
 from user_profile.models import UserProfile
 
+class Tag(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
+    tag = models.CharField(max_length=100, unique=True)
+
 class Post(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
     user = models.ForeignKey(UserProfile, related_name='posts', on_delete=models.CASCADE)
@@ -10,6 +14,7 @@ class Post(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     upvotes = models.ManyToManyField(UserProfile, related_name='upvoted_posts', default=None, blank=True)
     downvotes = models.ManyToManyField(UserProfile, related_name='downvoted_posts', default=None, blank=True)
+    tags = models.ManyToManyField(Tag, related_name='posts', blank=True)
 
 class Comment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
