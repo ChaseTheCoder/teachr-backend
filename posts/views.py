@@ -136,6 +136,26 @@ class PostFeed(APIView):
             return Response({"error": "An unexpected error occurred. Please try again later."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @permission_classes([AllowAny])
+class PostHomePage(APIView):
+    def get(self, request):
+        try:
+            post_ids = request.query_params.getlist('post_ids')
+            if not post_ids:
+                return Response({"error": "No post IDs provided."}, 
+                    status=status.HTTP_400_BAD_REQUEST)
+            
+            posts = Post.objects.filter(id__in=post_ids).order_by('-timestamp')
+            serializer = PostSerializer(posts, many=True, context={'request': request})
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error fetching posts for homepage: {e}", exc_info=True)
+            return Response(
+                {"error": "An unexpected error occurred. Please try again later."}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+@permission_classes([AllowAny])
 class CommentList(APIView):
     def get(self, request, post_id, *args, **kwargs):
         comments = Comment.objects.filter(post=post_id)\

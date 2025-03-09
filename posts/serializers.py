@@ -13,16 +13,19 @@ class PostSerializer(serializers.ModelSerializer):
     has_downvoted = serializers.SerializerMethodField()
     comments = serializers.SerializerMethodField()
 
+    tags = TagSerializer(many=True, read_only=True)
+
     class Meta:
         model = Post
         fields = ['id', 'user', 'title', 'body', 'timestamp', 'upvotes', 'downvotes', 'has_upvoted', 'has_downvoted', 'comments', 'tags']
         extra_kwargs = {'tags': {'required': False}}
 
     def create(self, validated_data):
-        tags = validated_data.pop('tags', [])
+        tags_data = validated_data.pop('tags', [])
         post = Post.objects.create(**validated_data)
-        if tags:
-            post.tags.set(tags)
+        for tag_data in tags_data:
+            tag, created = Tag.objects.get_or_create(**tag_data)
+            post.tags.add(tag)
         return post
 
     def get_upvotes(self, obj):
