@@ -98,6 +98,12 @@ class UserProfileBatchList(APIView):
         queryset = UserProfile.objects.filter(id__in=ids)
         serializer = BasicUserProfileSerializer(queryset, context={'request': request}, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class UserProfileList(APIView):
+    def get(self, request, *args, **kwargs):
+        queryset = UserProfile.objects.all()
+        serializer = UserProfileSerializer(queryset, context={'request': request}, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
 @permission_classes([AllowAny])
 class VerifyProfile(APIView):
