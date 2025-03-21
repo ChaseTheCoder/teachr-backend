@@ -1,7 +1,8 @@
 from django.urls import path
-from .views import DeleteComment, PostByUser, PostDetail, PostFeed, CommentList, PostHomePage, SearchPosts, TagList, TagGetOrCreate, TagSearch, UpdateCommentVote, UpdatePostVote
+from .views import DeleteComment, GradeList, PostByUser, PostDetail, PostFeed, CommentList, PostHomePage, SearchPosts, TagList, TagGetOrCreate, TagSearch, UpdateCommentVote, UpdatePostVote
 
 urlpatterns = [
+    path('grades/', GradeList.as_view(), name='grade-list'),
     path('tags/', TagList.as_view(), name='tag-list'),
     path('tag/get/', TagGetOrCreate.as_view(), name='tag-search'),
     path('tags/search/', TagSearch.as_view(), name='tag-search'),
