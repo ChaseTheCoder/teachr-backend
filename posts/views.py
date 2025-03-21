@@ -7,10 +7,25 @@ from rest_framework.decorators import permission_classes
 from rest_framework.permissions import AllowAny
 from notifications.models import Notification
 from user_profile.models import UserProfile
-from .models import Post, Comment, Tag
-from .serializers import PostSerializer, CommentSerializer, TagSerializer
+from .models import Grade, Post, Comment, Tag
+from .serializers import GradeSerializer, PostSerializer, CommentSerializer, TagSerializer
 from django.db.models import Q, Value, IntegerField
 from django.db.models import Count
+
+@permission_classes([AllowAny])
+class GradeList(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            grades = Grade.objects.all()
+            serializer = GradeSerializer(grades, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error fetching tags: {e}", exc_info=True)
+            return Response(
+                {"error": "An unexpected error occurred while fetching grades."}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 @permission_classes([AllowAny])
 class TagList(APIView):
@@ -95,6 +110,7 @@ class PostByUser(APIView):
             data = request.data.copy()
             data['user'] = user_id
             tag_ids = data.pop('tags', [])
+            grade_ids = data.pop('grades', [])
 
             post_serializer = PostSerializer(data=data)
             if post_serializer.is_valid():
@@ -103,6 +119,10 @@ class PostByUser(APIView):
                 for tag_id in tag_ids:
                     tag = get_object_or_404(Tag, id=tag_id)
                     post.tags.add(tag)
+
+                for grade_id in grade_ids:
+                    grade = get_object_or_404(Grade, id=grade_id)
+                    post.grades.add(grade)
 
                 return Response(post_serializer.data, status=status.HTTP_201_CREATED)
             return Response(post_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
