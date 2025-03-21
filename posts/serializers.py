@@ -17,6 +17,7 @@ class PostSerializer(serializers.ModelSerializer):
     has_upvoted = serializers.SerializerMethodField()
     has_downvoted = serializers.SerializerMethodField()
     comments = serializers.SerializerMethodField()
+    grades = GradeSerializer(many=True, read_only=True)
     tags = TagSerializer(many=True, read_only=True)
 
     class Meta:
