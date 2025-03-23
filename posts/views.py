@@ -336,3 +336,53 @@ class UpdateCommentVote(APIView):
         
         comment.save()
         return Response({"status": "success", "message": "Comment vote successful."}, status=status.HTTP_200_OK)
+
+@permission_classes([AllowAny])
+class SearchPostsByGradesAndTags(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            # Get query parameters
+            grade_ids = request.query_params.getlist('grade_ids', [])
+            tag_ids = request.query_params.getlist('tag_ids', [])
+            page = int(request.query_params.get('page', 1))
+            page_size = int(request.query_params.get('page_size', 10))
+            
+            if not grade_ids and not tag_ids:
+                return Response(
+                    {"error": "At least one grade_id or tag_id is required"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Start with all posts
+            posts = Post.objects.all()
+
+            # Filter by grades if provided
+            if grade_ids:
+                posts = posts.filter(grades__id__in=grade_ids)
+
+            # Filter by tags if provided
+            if tag_ids:
+                posts = posts.filter(tags__id__in=tag_ids)
+
+            # Remove duplicates and order by timestamp
+            posts = posts.distinct().order_by('-timestamp')
+
+            # Paginate results
+            offset = (page - 1) * page_size
+            posts = posts[offset:offset + page_size]
+
+            serializer = PostSerializer(posts, many=True, context={'request': request})
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        except ValueError as e:
+            return Response(
+                {"error": "Invalid page or page_size parameter"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error searching posts by grades and tags: {e}", exc_info=True)
+            return Response(
+                {"error": "An unexpected error occurred"}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

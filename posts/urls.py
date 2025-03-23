@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import DeleteComment, GradeList, PostByUser, PostDetail, PostFeed, CommentList, PostHomePage, SearchPosts, TagList, TagGetOrCreate, TagSearch, UpdateCommentVote, UpdatePostVote
+from .views import DeleteComment, GradeList, PostByUser, PostDetail, PostFeed, CommentList, PostHomePage, SearchPosts, SearchPostsByGradesAndTags, TagList, TagGetOrCreate, TagSearch, UpdateCommentVote, UpdatePostVote
 
 urlpatterns = [
     path('grades/', GradeList.as_view(), name='grade-list'),
@@ -15,4 +15,5 @@ urlpatterns = [
     path('posts/home_page/', PostHomePage.as_view(), name='post-home-page'),
     path('comment/<str:comment_id>/', DeleteComment.as_view(), name='delete-comment'),
     path('comment/<str:comment_id>/vote/', UpdateCommentVote.as_view(), name='comment-vote'),
+    path('posts/search/grades/tags/', SearchPostsByGradesAndTags.as_view(), name='search-posts-by-grades-tags'),
 ]
