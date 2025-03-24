@@ -160,15 +160,33 @@ class PostFeed(APIView):
         try:
             page = int(request.query_params.get('page', 1))
             page_size = int(request.query_params.get('page_size', 10))
+            grade_ids = request.query_params.getlist('grade_ids', [])
+            tag_ids = request.query_params.getlist('tag_ids', [])
             offset = (page - 1) * page_size
-            posts = Post.objects.all().order_by('-timestamp')[offset:offset + page_size]
+
+            posts = Post.objects.all()
+
+            if grade_ids:
+                posts = posts.filter(grades__id__in=grade_ids)
+
+            if tag_ids:
+                posts = posts.filter(tags__id__in=tag_ids)
+
+            posts = posts.distinct().order_by('-timestamp')[offset:offset + page_size]
             serializer = PostSerializer(posts, many=True, context={'request': request})
             return Response(serializer.data, status=status.HTTP_200_OK)
+        except ValueError as e:
+            return Response(
+                {"error": "Invalid page or page_size parameter"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
         except Exception as e:
-            import logging
             logger = logging.getLogger(__name__)
             logger.error(f"Error fetching posts: {e}", exc_info=True)
-            return Response({"error": "An unexpected error occurred. Please try again later."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"error": "An unexpected error occurred. Please try again later."}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 @permission_classes([AllowAny])
 class PostHomePage(APIView):
