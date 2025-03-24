@@ -109,6 +109,31 @@ CORS_ALLOWED_ORIGINS = [
     "https://www.teacher-lounge.com",
 ]
 
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+# If you're using cookies or Authorization headers
+CORS_EXPOSE_HEADERS = ['Content-Type', 'X-CSRFToken']
+CORS_PREFLIGHT_MAX_AGE = 86400  # 24 hours
+
 CORS_ALLOW_CREDENTIALS = True
 
 INTERNAL_IPS = [
