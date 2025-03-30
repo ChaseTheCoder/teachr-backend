@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'notifications',
     'posts',
     'school_domains',
+    'groups',
 ]
 
 SITE_ID = 1
