@@ -6,6 +6,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.decorators import permission_classes
 
 from user_profile.models import UserProfile
+from user_profile.serializers import BasicUserProfileSerializer
 from .models import Group
 from .serializers import GroupListSerializer, GroupSerializer
 import logging
@@ -120,8 +121,8 @@ class GroupJoin(APIView):
             if group.is_public:
                 group.members.add(user)
                 return Response(
-                  {"message": "User has joined the group"},
-                  status=status.HTTP_204_NO_CONTENT
+                    {"message": "User has joined the group"},
+                    status=status.HTTP_204_NO_CONTENT
                 )
             else:
                 group.pending_members.add(user)
@@ -219,3 +220,128 @@ class GroupDelete(APIView):
               {"error": str(e)}, 
               status=status.HTTP_500_INTERNAL_SERVER_ERROR
           )
+
+@permission_classes([IsAuthenticated])
+class GroupMembers(APIView):
+    def get(self, request, group_id):
+        try:
+            user_id = request.query_params.get('user')
+            if not user_id:
+                return Response(
+                    {"error": "user field is required"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            try:
+                user = UserProfile.objects.get(id=user_id)
+                group = Group.objects.get(id=group_id)
+            except (UserProfile.DoesNotExist, Group.DoesNotExist) as e:
+                return Response(
+                    {"error": str(e)}, 
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            # Check if user is admin
+            if user not in group.members.all():
+                return Response(
+                    {"error": "User is not a member of this group"}, 
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+            # Get members and pending members
+            members = BasicUserProfileSerializer(
+                group.members.all().order_by('teacher_name'), 
+                many=True,
+                context={'request': request}
+            ).data
+
+            if user in group.admins.all():
+                pending = BasicUserProfileSerializer(
+                    group.pending_members.all().order_by('teacher_name'), 
+                    many=True,
+                    context={'request': request}
+                ).data
+
+                return Response({
+                    "members": members,
+                    "pending": pending
+                })
+            else:
+                return Response({
+                    "members": members
+                })
+
+        except Exception as e:
+            logger.error(f"Error in GroupMembers.get: {str(e)}")
+            return Response(
+                {"error": "An unexpected error occurred"}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    def patch(self, request, group_id):
+        try:
+            user_id = request.query_params.get('user')
+            pending_user_id = request.data.get('pending_user_id')
+            admit = request.data.get('admit')
+
+            if not all([user_id, pending_user_id, admit is not None]):
+                return Response(
+                    {"error": "user, pending_user_id, and admit fields are required"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            try:
+                admin = UserProfile.objects.get(id=user_id)
+                pending_user = UserProfile.objects.get(id=pending_user_id)
+                group = Group.objects.get(id=group_id)
+            except (UserProfile.DoesNotExist, Group.DoesNotExist) as e:
+                return Response(
+                    {"error": str(e)}, 
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            # Verify admin status
+            if admin not in group.admins.all():
+                return Response(
+                    {"error": "User is not an admin of this group"}, 
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+            # Verify pending status
+            if pending_user not in group.pending_members.all():
+                return Response(
+                    {"error": "User is not in pending list"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Process admission/rejection
+            group.pending_members.remove(pending_user)
+            if admit:
+                group.members.add(pending_user)
+                message = f"User {pending_user.teacher_name} admitted to group"
+            else:
+                message = f"User {pending_user.teacher_name} rejected from group"
+
+            # Return updated lists
+            members = BasicUserProfileSerializer(
+                group.members.all().order_by('teacher_name'), 
+                many=True,
+                context={'request': request}
+            ).data
+
+            pending = BasicUserProfileSerializer(
+                group.pending_members.all().order_by('teacher_name'), 
+                many=True,
+                context={'request': request}
+            ).data
+
+            return Response({
+                "message": message,
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            logger.error(f"Error in GroupMembers.patch: {str(e)}")
+            return Response(
+                {"error": "An unexpected error occurred"}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
