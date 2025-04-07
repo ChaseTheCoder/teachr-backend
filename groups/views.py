@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.decorators import permission_classes
 
+from notifications.models import Notification
 from user_profile.models import UserProfile
 from user_profile.serializers import BasicUserProfileSerializer
 from .models import Group
@@ -56,37 +57,37 @@ logger = logging.getLogger(__name__)
 @permission_classes([IsAuthenticated])
 class GroupDetail(APIView):
     def get(self, request, group_id):
-      try:
-        group = Group.objects.get(id=group_id)
-      except Group.DoesNotExist:
-        logger.error(f"Group with id {group_id} not found.")
-        return Response(
-          {"error": "Group not found"}, 
-          status=status.HTTP_404_NOT_FOUND
-        )
+        try:
+            group = Group.objects.get(id=group_id)
+        except Group.DoesNotExist:
+            logger.error(f"Group with id {group_id} not found.")
+            return Response(
+                {"error": "Group not found"}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
 
-      user_id = request.query_params.get('user')
-      if not user_id:
-        logger.error("User query parameter is missing.")
-        return Response(
-          {"error": "user query parameter is required"}, 
-          status=status.HTTP_400_BAD_REQUEST
-        )
+        user_id = request.query_params.get('user')
+        if not user_id:
+            logger.error("User query parameter is missing.")
+            return Response(
+                {"error": "user query parameter is required"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-      try:
-        user = UserProfile.objects.get(id=user_id)
-      except UserProfile.DoesNotExist:
-        logger.error(f"User with id {user_id} not found.")
-        return Response(
-          {"error": "User not found"}, 
-          status=status.HTTP_404_NOT_FOUND
-        )
+        try:
+            user = UserProfile.objects.get(id=user_id)
+        except UserProfile.DoesNotExist:
+            logger.error(f"User with id {user_id} not found.")
+            return Response(
+                {"error": "User not found"}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
 
-      serializer = GroupSerializer(
-        group, 
-        context={'request': request, 'user_id': user_id}
-      )
-      return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = GroupSerializer(
+            group, 
+            context={'request': request, 'user_id': user_id}
+        )
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 @permission_classes([IsAuthenticated])
 class GroupJoin(APIView):
@@ -319,21 +320,14 @@ class GroupMembers(APIView):
             if admit:
                 group.members.add(pending_user)
                 message = f"User {pending_user.teacher_name} admitted to group"
+                Notification.objects.create(
+                    user=pending_user,
+                    group=group,
+                    notification_type='group_invite_accepted',
+                    url_id=group.id,
+                )
             else:
                 message = f"User {pending_user.teacher_name} rejected from group"
-
-            # Return updated lists
-            members = BasicUserProfileSerializer(
-                group.members.all().order_by('teacher_name'), 
-                many=True,
-                context={'request': request}
-            ).data
-
-            pending = BasicUserProfileSerializer(
-                group.pending_members.all().order_by('teacher_name'), 
-                many=True,
-                context={'request': request}
-            ).data
 
             return Response({
                 "message": message,
