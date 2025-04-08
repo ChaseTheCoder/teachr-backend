@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import AllowAny
 from groups.models import Group
 from notifications.models import Notification
@@ -162,6 +163,49 @@ class PostByUser(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@permission_classes([IsAuthenticated])
+class PostByGroup(APIView):
+    def get(self, request, group_id, *args, **kwargs):
+        logger = logging.getLogger(__name__)
+        try:
+            group = get_object_or_404(Group, id=group_id)
+            user_id = request.query_params.get('user_id')
+            logger.info(f"Fetching posts for group {group_id} by user {user_id}")
+
+            if not user_id:
+                return Response(
+                    {"error": "User parameter is required"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Get the actual UserProfile object
+            user = get_object_or_404(UserProfile, id=user_id)
+
+            # Check membership
+            if not group.is_public and user not in group.members.all():
+                logger.warning(f"Unauthorized access attempt to group {group_id} by user {user_id}")
+                return Response(
+                    {"error": "You do not have permission to view this group's posts."}, 
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+            posts = Post.objects.filter(group=group)
+            serializer = PostSerializer(posts, many=True, context={'request': request})
+            logger.info(f"Successfully fetched posts for group {group_id}")
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        except UserProfile.DoesNotExist:
+            return Response(
+                {"error": "User not found"}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            logger.error(f"Error fetching posts for group {group_id}: {e}", exc_info=True)
+            return Response(
+                {"error": "An unexpected error occurred while fetching the group's posts."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 @permission_classes([AllowAny])
 class PostDetail(APIView):
