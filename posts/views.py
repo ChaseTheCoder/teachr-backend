@@ -10,7 +10,7 @@ from groups.models import Group
 from notifications.models import Notification
 from user_profile.models import UserProfile
 from .models import Grade, Post, Comment, Tag
-from .serializers import GradeSerializer, PostSerializer, CommentSerializer, TagSerializer
+from .serializers import GradeSerializer, PostSerializer, CommentSerializer, PostSerializerV2, TagSerializer
 from django.db.models import Q, Value, IntegerField
 from django.db.models import Count
 
@@ -191,7 +191,7 @@ class PostByGroup(APIView):
                 )
 
             posts = Post.objects.filter(group=group)
-            serializer = PostSerializer(posts, many=True, context={'request': request})
+            serializer = PostSerializerV2(posts, many=True, context={'request': request})
             logger.info(f"Successfully fetched posts for group {group_id}")
             return Response(serializer.data, status=status.HTTP_200_OK)
 
