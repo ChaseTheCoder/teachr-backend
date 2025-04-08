@@ -1,5 +1,6 @@
 import uuid
 from django.db import models
+from groups.models import Group
 from user_profile.models import UserProfile
 
 class Grade(models.Model):
@@ -20,6 +21,8 @@ class Post(models.Model):
     downvotes = models.ManyToManyField(UserProfile, related_name='downvoted_posts', default=None, blank=True)
     grades = models.ManyToManyField(Grade, related_name='posts', blank=True)
     tags = models.ManyToManyField(Tag, related_name='posts', blank=True)
+    group = models.ForeignKey(Group, related_name='posts', on_delete=models.CASCADE, null=True, blank=True)
+    public = models.BooleanField(default=True)
 
 class Comment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)

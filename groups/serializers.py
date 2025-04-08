@@ -77,3 +77,8 @@ class GroupSerializer(serializers.ModelSerializer):
             if request:
                 return request.build_absolute_uri(obj.profile_pic.url)
         return None
+    
+class GroupPostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Group
+        fields = ['id', 'title']
