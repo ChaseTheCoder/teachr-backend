@@ -5,6 +5,7 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import AllowAny
+from groups.models import Group
 from notifications.models import Notification
 from user_profile.models import UserProfile
 from .models import Grade, Post, Comment, Tag
@@ -101,7 +102,7 @@ class TagSearch(APIView):
 @permission_classes([AllowAny])
 class PostByUser(APIView):
     def get(self, request, user_id, *args, **kwargs):
-        posts = Post.objects.filter(user=user_id)
+        posts = Post.objects.filter(user=user_id, public=True)
         serializer = PostSerializer(posts, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -111,6 +112,22 @@ class PostByUser(APIView):
             data['user'] = user_id
             tag_ids = data.pop('tags', [])
             grade_ids = data.pop('grades', [])
+            group_id = data.get('group', None)
+
+            if group_id:
+                group = get_object_or_404(Group, id=group_id)
+                user = get_object_or_404(UserProfile, id=user_id)
+                
+                # Check if user is a member of the group
+                if user not in group.members.all():
+                    return Response(
+                        {"error": "You must be a member of the group to post."}, 
+                        status=status.HTTP_403_FORBIDDEN
+                    )
+                
+                # Handle private group posts
+                if not group.is_public:
+                    data['public'] = False  # Force private for private group post
 
             post_serializer = PostSerializer(data=data)
             if post_serializer.is_valid():
@@ -123,6 +140,10 @@ class PostByUser(APIView):
                 for grade_id in grade_ids:
                     grade = get_object_or_404(Grade, id=grade_id)
                     post.grades.add(grade)
+
+                if group_id:
+                    post.group = group
+                    post.save()
 
                 return Response(post_serializer.data, status=status.HTTP_201_CREATED)
             return Response(post_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -146,6 +167,16 @@ class PostByUser(APIView):
 class PostDetail(APIView):
     def get(self, request, post_id, *args, **kwargs):
         post = get_object_or_404(Post, id=post_id)
+        # Check if the post is public or if the user is a member of the group
+        if not post.public:
+            user_id = request.query_params.get('user_id')
+            if not user_id:
+                return Response({"error": "You do not have permission to view this post."}, status=status.HTTP_403_FORBIDDEN)
+            
+            user = get_object_or_404(UserProfile, id=user_id)
+            if user not in post.group.members.all():
+                return Response({"error": "You do not have permission to view this post."}, status=status.HTTP_403_FORBIDDEN)
+
         serializer = PostSerializer(post, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -162,9 +193,19 @@ class PostFeed(APIView):
             page_size = int(request.query_params.get('page_size', 10))
             grade_ids = request.query_params.getlist('grade_ids', [])
             tag_ids = request.query_params.getlist('tag_ids', [])
+            user_id = request.query_params.get('user_id')
             offset = (page - 1) * page_size
 
-            posts = Post.objects.all()
+            # Base query for public posts
+            base_query = Q(public=True)
+
+            # If user is authenticated, add their group posts
+            if user_id:
+                user = get_object_or_404(UserProfile, id=user_id)
+                user_groups = user.groups.all()
+                base_query |= Q(group__in=user_groups)
+
+            posts = Post.objects.filter(base_query).order_by('-timestamp')
 
             if grade_ids:
                 posts = posts.filter(grades__id__in=grade_ids)

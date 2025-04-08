@@ -339,3 +339,56 @@ class GroupMembers(APIView):
                 {"error": "An unexpected error occurred"}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+@permission_classes([IsAuthenticated])
+class GroupMembersAdminRemove(APIView):
+    def patch(self, request, group_id):
+        try:
+            user_id = request.query_params.get('user')
+            remove_user_id = request.data.get('remove_user_id')
+
+            if not all([user_id, remove_user_id]):
+                return Response(
+                    {"error": "user and remove_user_id fields are required"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            try:
+                admin = UserProfile.objects.get(id=user_id)
+                remove_user = UserProfile.objects.get(id=remove_user_id)
+                group = Group.objects.get(id=group_id)
+            except (UserProfile.DoesNotExist, Group.DoesNotExist) as e:
+                return Response(
+                    {"error": str(e)}, 
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            # Verify admin status
+            if admin not in group.admins.all():
+                return Response(
+                    {"error": "User is not an admin of this group"}, 
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+            # Verify member status
+            if remove_user not in group.members.all():
+                return Response(
+                    {"error": "User is not a member of this group"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Remove user from members and pending_members lists
+            group.members.remove(remove_user)
+            group.pending_members.remove(remove_user)
+
+            message = f"User {remove_user.teacher_name} removed from group"
+            return Response({
+                "message": message,
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            logger.error(f"Error in GroupMembersAdminRemove.patch: {str(e)}")
+            return Response(
+                {"error": "An unexpected error occurred"}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
