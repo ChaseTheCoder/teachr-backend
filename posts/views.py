@@ -225,9 +225,60 @@ class PostDetail(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request, post_id, *args, **kwargs):
-        post = get_object_or_404(Post, id=post_id)
-        post.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        logger = logging.getLogger(__name__)
+        try:
+            post = get_object_or_404(Post, id=post_id)
+            user_id = request.query_params.get('user_id')
+            admin_user_id = request.query_params.get('admin_user_id')
+
+            # Neither user_id nor admin_user_id provided
+            if not user_id and not admin_user_id:
+                return Response(
+                    {"error": "Either user_id or admin_user_id is required"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Scenario 1: User deleting their own post
+            if user_id:
+                if str(post.user.id) != user_id:
+                    logger.warning(f"User {user_id} attempted to delete post {post_id} owned by {post.user.id}")
+                    return Response(
+                        {"error": "You can only delete your own posts"}, 
+                        status=status.HTTP_403_FORBIDDEN
+                    )
+                post.delete()
+                logger.info(f"Post {post_id} deleted by owner {user_id}")
+                return Response(status=status.HTTP_204_NO_CONTENT)
+
+            # Scenario 2: Admin deleting group post
+            if admin_user_id:
+                # Check if post belongs to a group
+                if not post.group:
+                    logger.warning(f"Admin {admin_user_id} attempted to delete non-group post {post_id}")
+                    return Response(
+                        {"error": "This post does not belong to any group"}, 
+                        status=status.HTTP_403_FORBIDDEN
+                    )
+
+                # Verify admin status
+                admin = get_object_or_404(UserProfile, id=admin_user_id)
+                if admin not in post.group.admins.all():
+                    logger.warning(f"User {admin_user_id} attempted to delete post {post_id} without admin privileges")
+                    return Response(
+                        {"error": "You must be a group admin to delete this post"}, 
+                        status=status.HTTP_403_FORBIDDEN
+                    )
+
+                post.delete()
+                logger.info(f"Post {post_id} deleted by admin {admin_user_id} from group {post.group.id}")
+                return Response(status=status.HTTP_204_NO_CONTENT)
+
+        except Exception as e:
+            logger.error(f"Error deleting post {post_id}: {str(e)}", exc_info=True)
+            return Response(
+                {"error": "An unexpected error occurred"}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 @permission_classes([AllowAny])
 class PostFeed(APIView):
