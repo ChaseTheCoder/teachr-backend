@@ -90,6 +90,43 @@ class GroupDetail(APIView):
             context={'request': request, 'user_id': user_id}
         )
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def patch(self, request, group_id):
+        try:
+            group = Group.objects.get(id=group_id)
+        except Group.DoesNotExist:
+            return Response(
+                {"error": "Group not found"}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        user_id = request.query_params.get('user_id')
+        if not user_id:
+            return Response(
+                {"error": "user query parameter is required"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            user = UserProfile.objects.get(id=user_id)
+        except UserProfile.DoesNotExist:
+            return Response(
+                {"error": "User not found"}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Verify admin status
+        if user not in group.admins.all():
+            return Response(
+                {"error": "User is not an admin of this group"}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        serializer = GroupSerializer(group, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @permission_classes([IsAuthenticated])
 class GroupJoin(APIView):
