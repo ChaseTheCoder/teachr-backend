@@ -11,7 +11,7 @@ class GroupListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
         fields = ['id', 'title', 'about', 'created_at', 'is_public', 
-                'member_count', 'is_member', 'is_admin', 'is_pending']
+                'member_count', 'is_member', 'is_admin', 'is_pending', 'profile_pic']
         read_only_fields = ['id', 'created_at']
 
     def get_member_count(self, obj):
@@ -41,13 +41,12 @@ class GroupSerializer(serializers.ModelSerializer):
     is_member = serializers.SerializerMethodField()
     is_admin = serializers.SerializerMethodField()
     is_pending = serializers.SerializerMethodField()
-    profile_pic_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Group
         fields = ['id', 'title', 'about', 'created_at', 'is_public', 
                 'member_count', 'admins', 'is_member', 
-                'is_admin', 'is_pending', 'profile_pic', 'profile_pic_url', 'rules']
+                'is_admin', 'is_pending', 'profile_pic', 'rules']
         read_only_fields = ['id', 'created_at', 'admins']
 
     def get_member_count(self, obj):
