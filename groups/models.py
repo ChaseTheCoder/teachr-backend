@@ -24,3 +24,4 @@ class Group(models.Model):
         null=True,
         blank=True
     )
+    rules = models.TextField(blank=True, null=True)
