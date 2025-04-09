@@ -1,3 +1,5 @@
+import os
+from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -390,5 +392,64 @@ class GroupMembersAdminRemove(APIView):
             logger.error(f"Error in GroupMembersAdminRemove.patch: {str(e)}")
             return Response(
                 {"error": "An unexpected error occurred"}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+@permission_classes([IsAuthenticated])
+class GroupImageUpload(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+
+    def post(self, request, group_id, *args, **kwargs):
+        try:
+            # Get group and verify it exists
+            group = get_object_or_404(Group, id=group_id)
+            
+            # Verify user is admin
+            user_id = request.query_params.get('user_id')
+            if not user_id:
+                return Response(
+                    {'error': 'User parameter is required'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            try:
+                user = UserProfile.objects.get(id=user_id)
+            except UserProfile.DoesNotExist:
+                return Response(
+                    {'error': 'User not found'}, 
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            if user not in group.admins.all():
+                return Response(
+                    {'error': 'Only group admins can update the group profile picture'}, 
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            
+            # Check if image was provided
+            if 'profile_pic' not in request.FILES:
+                return Response(
+                    {'error': 'No image provided'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Delete old image if it exists
+            if group.profile_pic:
+                if os.path.isfile(group.profile_pic.path):
+                    os.remove(group.profile_pic.path)
+
+            # Save new image
+            group.profile_pic = request.FILES['profile_pic']
+            group.save()
+            
+            return Response({
+                'message': 'Group profile image uploaded successfully',
+                'image_url': request.build_absolute_uri(group.profile_pic.url)
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            logger.error(f"Error uploading group image: {str(e)}")
+            return Response(
+                {'error': str(e)}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
