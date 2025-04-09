@@ -47,7 +47,7 @@ class GroupSerializer(serializers.ModelSerializer):
         model = Group
         fields = ['id', 'title', 'about', 'created_at', 'is_public', 
                 'member_count', 'admins', 'is_member', 
-                'is_admin', 'is_pending', 'profile_pic', 'profile_pic_url']
+                'is_admin', 'is_pending', 'profile_pic', 'profile_pic_url', 'rules']
         read_only_fields = ['id', 'created_at', 'admins']
 
     def get_member_count(self, obj):
@@ -82,3 +82,9 @@ class GroupPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
         fields = ['id', 'title']
+
+class GroupRulesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Group
+        fields = ['id', 'rules']
+        read_only_fields = ['id']

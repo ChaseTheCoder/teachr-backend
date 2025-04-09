@@ -11,7 +11,7 @@ from notifications.models import Notification
 from user_profile.models import UserProfile
 from user_profile.serializers import BasicUserProfileSerializer
 from .models import Group
-from .serializers import GroupListSerializer, GroupSerializer
+from .serializers import GroupListSerializer, GroupRulesSerializer, GroupSerializer
 import logging
 
 @permission_classes([IsAuthenticated])
@@ -422,7 +422,7 @@ class GroupImageUpload(APIView):
 
             if user not in group.admins.all():
                 return Response(
-                    {'error': 'Only group admins can update the group profile picture'}, 
+                    {'error': 'Only group admins can update the group profile picture'},
                     status=status.HTTP_403_FORBIDDEN
                 )
             
@@ -451,5 +451,76 @@ class GroupImageUpload(APIView):
             logger.error(f"Error uploading group image: {str(e)}")
             return Response(
                 {'error': str(e)}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+@permission_classes([IsAuthenticated])
+class GroupRules(APIView):
+    def get(self, request, group_id):
+        """View rules - accessible to anyone for public groups, members only for private groups"""
+        try:
+            group = get_object_or_404(Group, id=group_id)
+            user_id = request.query_params.get('user_id')
+
+            # For private groups, verify membership
+            if not group.is_public:
+                if not user_id:
+                    return Response(
+                        {"error": "User parameter required for private groups"}, 
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                
+                user = get_object_or_404(UserProfile, id=user_id)
+                if user not in group.members.all():
+                    return Response(
+                        {"error": "You must be a member to view private group rules"}, 
+                        status=status.HTTP_403_FORBIDDEN
+                    )
+
+            return Response({
+                "rules": group.rules or "",
+                "is_admin": user_id and group.admins.filter(id=user_id).exists()
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            logger.error(f"Error fetching group rules: {str(e)}")
+            return Response(
+                {"error": "An unexpected error occurred"}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    def patch(self, request, group_id):
+        """Update rules - admin only"""
+        try:
+            group = get_object_or_404(Group, id=group_id)
+            user_id = request.query_params.get('user_id')
+            
+            if not user_id:
+                return Response(
+                    {"error": "User parameter is required"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            user = get_object_or_404(UserProfile, id=user_id)
+            if user not in group.admins.all():
+                return Response(
+                    {"error": "Only group admins can update rules"}, 
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+            serializer = GroupRulesSerializer(group, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({
+                    "message": "Rules updated successfully",
+                    "rules": group.rules
+                }, status=status.HTTP_200_OK)
+
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            logger.error(f"Error updating group rules: {str(e)}")
+            return Response(
+                {"error": "An unexpected error occurred"}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
