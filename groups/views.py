@@ -288,9 +288,19 @@ class GroupMembers(APIView):
                     status=status.HTTP_403_FORBIDDEN
                 )
 
-            # Get members and pending members
+            # Get admins
+            admins = BasicUserProfileSerializer(
+                group.admins.all().order_by('teacher_name'),
+                many=True,
+                context={'request': request}
+            ).data
+
+            # Get members excluding admins
+            regular_members = group.members.exclude(
+                id__in=group.admins.values_list('id', flat=True)
+            ).order_by('teacher_name')
             members = BasicUserProfileSerializer(
-                group.members.all().order_by('teacher_name'), 
+                regular_members,
                 many=True,
                 context={'request': request}
             ).data
@@ -303,11 +313,13 @@ class GroupMembers(APIView):
                 ).data
 
                 return Response({
-                    "members": members,
-                    "pending": pending
+                    "admins": admins,
+                    "pending": pending,
+                    "members": members
                 })
             else:
                 return Response({
+                    "admins": admins,
                     "members": members
                 })
 
