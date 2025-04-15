@@ -7,11 +7,13 @@ class GroupListSerializer(serializers.ModelSerializer):
     is_member = serializers.SerializerMethodField()
     is_admin = serializers.SerializerMethodField()
     is_pending = serializers.SerializerMethodField()
+    profile_pic_url = serializers.SerializerMethodField()  # Add this field
 
     class Meta:
         model = Group
         fields = ['id', 'title', 'about', 'created_at', 'is_public', 
-                'member_count', 'is_member', 'is_admin', 'is_pending', 'profile_pic']
+                'member_count', 'is_member', 'is_admin', 'is_pending', 'profile_pic',
+                'profile_pic_url']  # Update fields
         read_only_fields = ['id', 'created_at']
 
     def get_member_count(self, obj):
@@ -35,18 +37,26 @@ class GroupListSerializer(serializers.ModelSerializer):
             return obj.pending_members.filter(id=user_id).exists()
         return False
 
+    def get_profile_pic_url(self, obj):
+        if obj.profile_pic:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.profile_pic.url)
+        return None
+
 class GroupSerializer(serializers.ModelSerializer):
     member_count = serializers.SerializerMethodField()
     admins = BasicUserProfileSerializer(many=True, read_only=True)
     is_member = serializers.SerializerMethodField()
     is_admin = serializers.SerializerMethodField()
     is_pending = serializers.SerializerMethodField()
+    profile_pic_url = serializers.SerializerMethodField()  # Add this field
 
     class Meta:
         model = Group
         fields = ['id', 'title', 'about', 'created_at', 'is_public', 
                 'member_count', 'admins', 'is_member', 
-                'is_admin', 'is_pending', 'profile_pic', 'rules']
+                'is_admin', 'is_pending', 'profile_pic_url', 'profile_pic', 'rules']  # Update fields
         read_only_fields = ['id', 'created_at', 'admins']
 
     def get_member_count(self, obj):
