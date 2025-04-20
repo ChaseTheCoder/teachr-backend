@@ -62,7 +62,7 @@ class PolicyAdmin(APIView):
     @verify_staff_auth0
     def post(self, request, auth0, *args, **kwargs):
         try:
-            serializer = PolicySerializer(data=request.data)
+            serializer = PolicyAdminSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
