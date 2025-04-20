@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'posts',
     'school_domains',
     'groups',
+    'policies',
 ]
 
 SITE_ID = 1
