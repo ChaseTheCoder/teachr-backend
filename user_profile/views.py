@@ -140,12 +140,16 @@ class ProfileImageUpload(APIView):
                 os.remove(user_profile.profile_pic.path)
 
         try:
+            # Save the new profile picture
             user_profile.profile_pic = request.FILES['profile_pic']
             user_profile.save()
-            
+
+            # Add a version query parameter to the image URL to force React-Query to fetch the updated image
+            image_url = f"{request.build_absolute_uri(user_profile.profile_pic.url)}?v={int(user_profile.updated_at.timestamp())}"
+
             return Response({
                 'message': 'Profile image uploaded successfully',
-                'image_url': request.build_absolute_uri(user_profile.profile_pic.url)
+                'image_url': image_url
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
