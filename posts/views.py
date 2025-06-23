@@ -309,7 +309,7 @@ class PostFeed(APIView):
                 posts = posts.filter(tags__id__in=tag_ids)
 
             posts = posts.distinct().order_by('-timestamp')[offset:offset + page_size]
-            serializer = PostSerializer(posts, many=True, context={'request': request})
+            serializer = PostSerializerV2(posts, many=True, context={'request': request})
             return Response(serializer.data, status=status.HTTP_200_OK)
         except ValueError as e:
             return Response(
