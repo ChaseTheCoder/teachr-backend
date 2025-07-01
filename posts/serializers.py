@@ -90,6 +90,7 @@ class CommentSerializer(serializers.ModelSerializer):
     downvotes = serializers.SerializerMethodField()
     has_upvoted = serializers.SerializerMethodField()
     has_downvoted = serializers.SerializerMethodField()
+    user = BasicUserProfileSerializer(read_only=True)
 
     class Meta:
         model = Comment

@@ -33,7 +33,16 @@ class GradeList(APIView):
 class TagList(APIView):
     def get(self, request, *args, **kwargs):
         try:
-            tags = Tag.objects.all()
+            # Get tags with their post count, ordered by most used
+            tags = Tag.objects.annotate(
+                post_count=Count('posts')
+            ).filter(
+                post_count__gt=0  # Only get tags that are used in posts
+            ).order_by(
+                '-post_count',  # Order by post count descending
+                'tag'          # Secondary ordering by tag name
+            )
+
             serializer = TagSerializer(tags, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
@@ -540,4 +549,3 @@ class SearchPostsByGradesAndTags(APIView):
                 {"error": "An unexpected error occurred"}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-        
