@@ -79,19 +79,27 @@ class VerifyEmailView(APIView):
             try:
                 client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
                 prompt = f"""
-                Analyze if {domain} is a valid United States educational institution domain, early childhood through higher education.
-                For school type the choices are: ECE, K12, HIGHER_ED.
-                ECE is for Early Childhood Education, K12 is for a range within Kindergarten to 12th grade, and HIGHER_ED is for colleges and universities.
-                If the domain is valid, return the following JSON object:
-                {{
-                    "is_valid": true/false,
-                    "school": "Full school name",
-                    "city": "City name",
-                    "state": "State name",
-                    "zip_code": "ZIP code",
-                    "school_type": "K12",
-                    "staff_email_pattern": ".*@domain.edu"
-                }}
+                    Analyze whether the domain "{domain}" belongs to a **valid United States educational institution**, covering Early Childhood Education (ECE) through 12th grade (K12).
+
+                    Definitions:
+                    - "ECE" refers to Early Childhood Education institutions serving children from birth through preschool.
+                    - "K12" refers to institutions serving Kindergarten through 12th grade, including public/private schools and school districts.
+
+                    Requirements:
+                    - Consider only real, operating institutions located in the U.S.
+                    - Exclude colleges, universities, training institutes, and international schools.
+                    - Use only trustworthy indicators such as publicly listed school or district websites, U.S. school databases, or recognizable naming patterns.
+
+                    If the domain belongs to a valid U.S. educational institution (ECE or K12), return the following **strictly formatted JSON**:
+                    {
+                    "is_valid": true,
+                    "school": "Full School Name",
+                    "city": "City Name",
+                    "state": "State Abbreviation (e.g. NY)",
+                    "zip_code": "5-digit ZIP Code",
+                    "school_type": "ECE" or "K12",
+                    "staff_email_pattern": ".*@domain.com"
+                    }
                 """
 
                 response = client.chat.completions.create(
