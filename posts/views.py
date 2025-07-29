@@ -363,22 +363,53 @@ class CommentList(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request, post_id, *args, **kwargs):
-        data = request.data.copy()
-        data['post'] = post_id
-        serializer = CommentSerializer(data=data)
-        if serializer.is_valid():
-            comment = serializer.save()
-            post = get_object_or_404(Post, id=post_id)
-            if post.user != comment.user:
-                Notification.objects.create(
-                    user=post.user,
-                    initiator=comment.user,
-                    notification_type='comment',
-                    url_id=post_id,
-                    sub_url_id=comment.id
+        try:
+            data = request.data.copy()
+            data['post'] = post_id
+            
+            # Validate that user exists
+            user_id = data.get('user')
+            if not user_id:
+                return Response(
+                    {"error": "User field is required"}, 
+                    status=status.HTTP_400_BAD_REQUEST
                 )
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Verify user exists
+            try:
+                user = UserProfile.objects.get(id=user_id)
+            except UserProfile.DoesNotExist:
+                return Response(
+                    {"error": "User not found"}, 
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            
+            # Verify post exists
+            post = get_object_or_404(Post, id=post_id)
+            
+            serializer = CommentSerializer(data=data)
+            if serializer.is_valid():
+                comment = serializer.save()
+                
+                # Create notification if comment is not from post author
+                if post.user != comment.user:
+                    Notification.objects.create(
+                        user=post.user,
+                        initiator=comment.user,
+                        notification_type='comment',
+                        url_id=post_id,
+                        sub_url_id=comment.id
+                    )
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+        except Exception as e:
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error creating comment: {e}", exc_info=True)
+            return Response(
+                {"error": "An error occurred while creating the comment"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 class DeleteComment(APIView):
     def delete(self, request, comment_id, *args, **kwargs):

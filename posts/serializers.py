@@ -90,11 +90,11 @@ class CommentSerializer(serializers.ModelSerializer):
     downvotes = serializers.SerializerMethodField()
     has_upvoted = serializers.SerializerMethodField()
     has_downvoted = serializers.SerializerMethodField()
-    user = BasicUserProfileSerializer(read_only=True)
 
     class Meta:
         model = Comment
         fields = ['id', 'post', 'user', 'body', 'timestamp', 'upvotes', 'downvotes', 'has_upvoted', 'has_downvoted']
+        read_only_fields = ['id', 'timestamp']
 
     def get_upvotes(self, obj):
         return obj.upvotes.count()
