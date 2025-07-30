@@ -367,7 +367,7 @@ class CommentList(APIView):
             data = request.data.copy()
             data['post'] = post_id
             
-            # Validate that user exists
+            # Validate user exists before creating comment
             user_id = data.get('user')
             if not user_id:
                 return Response(
@@ -387,21 +387,26 @@ class CommentList(APIView):
             # Verify post exists
             post = get_object_or_404(Post, id=post_id)
             
-            serializer = CommentSerializer(data=data)
-            if serializer.is_valid():
-                comment = serializer.save()
-                
-                # Create notification if comment is not from post author
-                if post.user != comment.user:
-                    Notification.objects.create(
-                        user=post.user,
-                        initiator=comment.user,
-                        notification_type='comment',
-                        url_id=post_id,
-                        sub_url_id=comment.id
-                    )
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            # Create comment directly instead of using serializer
+            comment = Comment.objects.create(
+                user=user,
+                post=post,
+                body=data.get('body', '')
+            )
+            
+            # Create notification if comment is not from post author
+            if post.user != comment.user:
+                Notification.objects.create(
+                    user=post.user,
+                    initiator=comment.user,
+                    notification_type='comment',
+                    url_id=post_id,
+                    sub_url_id=comment.id
+                )
+            
+            # Serialize the created comment for response
+            serializer = CommentSerializer(comment, context={'request': request})
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
             
         except Exception as e:
             logger = logging.getLogger(__name__)
